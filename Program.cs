@@ -1,0 +1,96 @@
+using DoAn.EF;
+using DoAn.Models;
+using DoAn.Repositories.Users;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Filters;
+using System.Text;
+
+namespace DoAn
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Add services to the container.
+
+            builder.Services.AddControllers();
+            builder.Services.AddIdentity<UserModels, IdentityRole<Guid>>().AddEntityFrameworkStores<EFDbContext>().AddDefaultTokenProviders();
+            //builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+            builder.Services.AddDbContext<EFDbContext>((options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("econnection"))));
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(option =>
+            {
+                option.AddSecurityDefinition("oauth2", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "Authorization Header",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey 
+                });
+
+                option.OperationFilter<SecurityRequirementsOperationFilter>();
+            });
+            builder.Services.AddTransient<IUserRepositories, UserRepositories>();
+
+            string issuer = builder.Configuration["JWT:ValidIssuer"];
+            string signingKey = builder.Configuration["JWT:Sercet"];
+   
+            byte[] signingKeyBytes = Encoding.UTF8.GetBytes(signingKey);
+
+            builder.Services.AddAuthentication(option =>
+            {
+                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(option =>
+            {
+                option.SaveToken = true;
+                option.RequireHttpsMetadata = false;
+                option.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidAudience = issuer,
+                    ValidIssuer = issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(signingKeyBytes),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            builder.Services.ConfigureApplicationCookie(option =>
+            {
+                option.LoginPath = "/login";
+                option.LogoutPath = "/logout";
+                option.AccessDeniedPath = "/not-found";
+            });
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.Run();
+        }
+    }
+}
