@@ -91,11 +91,10 @@ namespace DoAn.Repositories.Products
         {
 
             var query = (from p in _context.products
-                         join pi in _context.ProductImage on p.ProductId equals pi.ProductId
-                         join pic in _context.GetsProductInCategory on pi.ProductId equals pic.ProductId into picc
+                         join pic in _context.GetsProductInCategory on p.ProductId equals pic.ProductId into picc
                          from pics in picc.DefaultIfEmpty()
                          join c in _context.categories on pics.CategoryId equals c.CategoryId
-                         select new { p, pi, c });
+                         select new { p, c });
 
             int totalRow = await _context.products.CountAsync();
 
@@ -111,7 +110,7 @@ namespace DoAn.Repositories.Products
                    ProductName = x.p.ProductName,
                    PriceOld = x.p.PriceOld,
                    PriceNew = x.p.PriceNew,
-                   Image_Url = x.pi.url_image,
+                   Image_Url = x.p.Image_Url,
                    dateAdd = x.p.dateAdd,
                    ProductDescription = x.p.ProductDescription,
                    ShortDetails = x.p.ShortDetails,
@@ -197,6 +196,7 @@ namespace DoAn.Repositories.Products
                             
                 if(update.CategoryId.Count > 0)
                 {
+                    
                     var existingId = product.GetsProductInCategories.Select(x => x.ProductId).ToList();
                     var SelectId = update.CategoryId.ToList();
 
@@ -204,13 +204,23 @@ namespace DoAn.Repositories.Products
                     var toRemove = existingId.Except(SelectId).ToList();
 
                     product.GetsProductInCategories = product.GetsProductInCategories.Where(x => !toRemove.Contains(x.CategoryId)).ToList();
-
+                    
                     foreach (var item in toAdd)
                     {
-                        product.GetsProductInCategories.Add(new ProductInCategory
+                       
+                        if(product.GetsProductInCategories.Where(x => x.CategoryId == item).ToList().Count == 0 ) 
                         {
-                            CategoryId = item
-                        });
+                            product.GetsProductInCategories.Add(new ProductInCategory
+                            {
+                                CategoryId = item
+                            });
+                           
+                        }else
+                        {
+                  
+                            return new ApiErrorResult<bool>();
+                        }
+                      
                     }
 
                 }
