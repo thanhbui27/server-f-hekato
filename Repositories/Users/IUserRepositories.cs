@@ -1,5 +1,5 @@
 ﻿using DoAn.ViewModels.Users;
-using Learn.ViewModels.common;
+using DoAn.Helpers.ApiResponse;
 
 namespace DoAn.Repositories.Users
 {

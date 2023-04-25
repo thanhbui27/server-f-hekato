@@ -1,3 +1,4 @@
+using DoAn.Helpers.TypeCheck;
 using DoAn.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -5,10 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace DoAn.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
 
     public class WeatherForecastController : ControllerBase
     {
+
+
         private static readonly string[] Summaries = new[]
         {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -23,7 +26,7 @@ namespace DoAn.Controllers
 
  
         [HttpGet("/GetWeatherForecast")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, user")]
         public IEnumerable<WeatherForecast> Get()
         {
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
