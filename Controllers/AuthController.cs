@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace DoAn.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AuthController : Controller
     {
         public readonly IUserRepositories _userRepositories;

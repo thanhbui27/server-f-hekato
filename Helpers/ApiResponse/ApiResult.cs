@@ -1,4 +1,4 @@
-﻿namespace Learn.ViewModels.common
+﻿namespace DoAn.Helpers.ApiResponse
 {
     public class ApiResult<T>
     {

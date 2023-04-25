@@ -1,10 +1,15 @@
 using DoAn.EF;
 using DoAn.Models;
+using DoAn.Repositories.Categorys;
+using DoAn.Repositories.Products;
+using DoAn.Repositories.StorageService;
+using DoAn.Repositories.StorageService.StorageService;
 using DoAn.Repositories.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
@@ -18,7 +23,9 @@ namespace DoAn
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
+            builder.Logging.ClearProviders();
+            builder.Logging.AddDebug();
+            builder.Logging.AddConsole();
             builder.Services.AddControllers();
             builder.Services.AddIdentity<UserModels, IdentityRole<Guid>>().AddEntityFrameworkStores<EFDbContext>().AddDefaultTokenProviders();
             //builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -38,7 +45,14 @@ namespace DoAn
 
                 option.OperationFilter<SecurityRequirementsOperationFilter>();
             });
+
+
             builder.Services.AddTransient<IUserRepositories, UserRepositories>();
+            builder.Services.AddTransient<ICategoryRepositories, CategoryRepositories>();
+            builder.Services.AddTransient<IStorageService, StorageServices>();
+            builder.Services.AddTransient<IProductRepositories, ProductRepositories>();
+
+            builder.Services.AddAutoMapper(typeof(Program));
 
             string issuer = builder.Configuration["JWT:ValidIssuer"];
             string signingKey = builder.Configuration["JWT:Sercet"];
@@ -82,7 +96,17 @@ namespace DoAn
                 app.UseSwaggerUI();
             }
 
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Swagger f-hekato V1");
+            });
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources\Images")),
+                RequestPath = new PathString("/Resources/Images")
+            });
 
             app.UseAuthentication();
 
