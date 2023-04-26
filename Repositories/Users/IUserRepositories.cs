@@ -1,5 +1,6 @@
 ﻿using DoAn.ViewModels.Users;
 using DoAn.Helpers.ApiResponse;
+using DoAn.Models;
 
 namespace DoAn.Repositories.Users
 {
@@ -7,5 +8,7 @@ namespace DoAn.Repositories.Users
     {
         Task<ApiResult<string>> Login(UserLogin user);
         Task<ApiResult<bool>> Register(UserRegister user);
+
+        Task<ApiResult<UserModels>> GetMe();
     }
 }

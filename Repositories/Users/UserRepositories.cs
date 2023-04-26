@@ -1,7 +1,9 @@
 ﻿using DoAn.Helpers.ApiResponse;
+using DoAn.Migrations;
 using DoAn.Models;
 using DoAn.ViewModels.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,11 +17,13 @@ namespace DoAn.Repositories.Users
         public readonly UserManager<UserModels> _userManager;
         private readonly SignInManager<UserModels> _signInManager;
         private readonly IConfiguration _config;
-        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config, IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<ApiResult<string>> Login(UserLogin user)
         {
@@ -38,7 +42,8 @@ namespace DoAn.Repositories.Users
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email,u.Email),
-                new Claim(ClaimTypes.GivenName, u.firstName + u.lastName),
+                new Claim(ClaimTypes.NameIdentifier, u.Id.ToString()),
+                new Claim(ClaimTypes.GivenName, u.fullName),
                 new Claim(ClaimTypes.Name, user.userName),
                 new Claim(ClaimTypes.Role, "Admin")
             };
@@ -54,7 +59,7 @@ namespace DoAn.Repositories.Users
                 Issuer = issuer,
                 Audience= issuer,
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddMinutes(1),
+                Expires = DateTime.Now.AddHours(12),
                 SigningCredentials = creds
             };
             //var token = new JwtSecurityToken(
@@ -72,6 +77,12 @@ namespace DoAn.Repositories.Users
             return new ApiSuccessResult<string>(tokenHandle.WriteToken(crToken));
 
         }
+        public async Task<ApiResult<UserModels>> GetMe()
+        {
+            var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+            
+            return new ApiSuccessResult<UserModels>(user);
+        }
 
         public async Task<ApiResult<bool>> Register(UserRegister u)
         {
@@ -88,8 +99,8 @@ namespace DoAn.Repositories.Users
             user = new UserModels()
             {
                 Email = u.Email,
-                firstName = u.FirstName,
-                lastName = u.LastName,
+                fullName = u.fullName,
+                PhoneNumber = u.PhoneNumber,
                 UserName = u.userName,
                 dob = DateTime.UtcNow.Date,
         };

@@ -28,11 +28,17 @@ namespace DoAn
             builder.Logging.AddConsole();
             builder.Services.AddControllers();
             builder.Services.AddIdentity<UserModels, IdentityRole<Guid>>().AddEntityFrameworkStores<EFDbContext>().AddDefaultTokenProviders();
+
             //builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+          
+
             builder.Services.AddDbContext<EFDbContext>((options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("econnection"))));
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+  
             builder.Services.AddEndpointsApiExplorer();
+
             builder.Services.AddSwaggerGen(option =>
             {
                 option.AddSecurityDefinition("oauth2", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -51,7 +57,6 @@ namespace DoAn
             builder.Services.AddTransient<ICategoryRepositories, CategoryRepositories>();
             builder.Services.AddTransient<IStorageService, StorageServices>();
             builder.Services.AddTransient<IProductRepositories, ProductRepositories>();
-
             builder.Services.AddAutoMapper(typeof(Program));
 
             string issuer = builder.Configuration["JWT:ValidIssuer"];
@@ -61,6 +66,7 @@ namespace DoAn
 
             builder.Services.AddAuthentication(option =>
             {
+                
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -80,6 +86,8 @@ namespace DoAn
                 };
             });
 
+            builder.Services.AddHttpContextAccessor();
+
             builder.Services.ConfigureApplicationCookie(option =>
             {
                 option.LoginPath = "/login";
@@ -89,6 +97,11 @@ namespace DoAn
 
             var app = builder.Build();
 
+            app.UseCors(builder =>
+             builder.WithOrigins("http://localhost:3000")
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+          );
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
