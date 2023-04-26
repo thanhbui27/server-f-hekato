@@ -7,13 +7,12 @@
 
         public IFormFile? Image_Url { get; set; }
 
+        public int quantity { get; set; }
         public decimal? PriceNew { get; set; }
         public decimal? PriceOld { get; set; }
 
         public string? ShortDetails { get; set; }
         public string? ProductDescription { get; set; }
-
-        public DateTime? dateAdd { get; set; } = DateTime.Now;
         public List<int>? CategoryId { get; set; } = new List<int>();
     }
 }
