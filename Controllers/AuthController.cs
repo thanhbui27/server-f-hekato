@@ -8,15 +8,32 @@ namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+  
     public class AuthController : Controller
     {
         public readonly IUserRepositories _userRepositories;
+  
+
         public AuthController(IUserRepositories userRepositories)
         {
             _userRepositories = userRepositories;
+   
         }
 
-        [HttpPost("/login")]
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            //var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (userId == null)
+            //{
+            //    return NotFound();
+            //}
+          
+            return Ok(await _userRepositories.GetMe());
+        }
+
+        [HttpPost("login")]
         public async Task<IActionResult> login(UserLogin u)
         {
             var result = await _userRepositories.Login(u);
@@ -27,7 +44,7 @@ namespace DoAn.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("/register")]
+        [HttpPost("register")]
         public async Task<IActionResult> register([FromBody]UserRegister u)
         {
             var result = await _userRepositories.Register(u);
