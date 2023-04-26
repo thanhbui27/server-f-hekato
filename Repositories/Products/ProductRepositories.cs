@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Xml;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DoAn.Repositories.Products
 {
@@ -56,6 +55,7 @@ namespace DoAn.Repositories.Products
                             ProductId = productMapper.ProductId,
                         });
                     }
+                    productMapper.dateAdd = DateTime.Now;
                     productMapper.GetsProductInCategories = pr;
                     _context.products.Add(productMapper);
                     await _context.SaveChangesAsync();
@@ -109,6 +109,7 @@ namespace DoAn.Repositories.Products
                    ProductId = x.p.ProductId,
                    ProductName = x.p.ProductName,
                    PriceOld = x.p.PriceOld,
+                   quantity = x.p.quantity,
                    PriceNew = x.p.PriceNew,
                    Image_Url = x.p.Image_Url,
                    dateAdd = x.p.dateAdd,
@@ -131,6 +132,7 @@ namespace DoAn.Repositories.Products
                 ProductId = g.Key,
                 ProductName = g.First().ProductName,
                 Image_Url = g.First().Image_Url,
+                quantity= g.First().quantity,
                 PriceNew = g.First().PriceNew,
                 PriceOld = g.First().PriceOld,
                 ShortDetails = g.First().ShortDetails,
@@ -176,11 +178,11 @@ namespace DoAn.Repositories.Products
 
                 }
 
-                if (update.dateAdd != null)
+                if(update.quantity != null)
                 {
-                    product.dateAdd = update.dateAdd;
-
+                    product.quantity = update.quantity;
                 }
+
 
                 if (update.ProductDescription != null)
                 {
@@ -239,6 +241,7 @@ namespace DoAn.Repositories.Products
                         await _context.SaveChangesAsync();
                     }
                 }
+                product.dateAdd = DateTime.Now;
                 _context.products.Update(product);
                 await _context.SaveChangesAsync();
                 return new ApiSuccessResult<bool>(true);
@@ -262,7 +265,7 @@ namespace DoAn.Repositories.Products
                          url_image = pi.url_image,
                          timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
                      }).ToList(),
-
+                     quantity = p.quantity,
                      PriceNew = p.PriceNew,
                      PriceOld = p.PriceOld,
                      ShortDetails = p.ShortDetails,
