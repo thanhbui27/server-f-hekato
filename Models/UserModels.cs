@@ -6,6 +6,7 @@ namespace DoAn.Models
     {
         public string fullName { get; set; }
 
+        public string type { get; set; }
         public DateTime? dob { get; set; } 
     }
 }

@@ -1,4 +1,5 @@
-﻿using DoAn.Helpers.ApiResponse;
+﻿using AutoMapper;
+using DoAn.Helpers.ApiResponse;
 using DoAn.Migrations;
 using DoAn.Models;
 using DoAn.ViewModels.Users;
@@ -18,12 +19,14 @@ namespace DoAn.Repositories.Users
         private readonly SignInManager<UserModels> _signInManager;
         private readonly IConfiguration _config;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config, IHttpContextAccessor httpContextAccessor)
+        private readonly IMapper _mapper;
+        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config, IHttpContextAccessor httpContextAccessor, IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
             _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
         }
         public async Task<ApiResult<string>> Login(UserLogin user)
         {
@@ -45,7 +48,7 @@ namespace DoAn.Repositories.Users
                 new Claim(ClaimTypes.NameIdentifier, u.Id.ToString()),
                 new Claim(ClaimTypes.GivenName, u.fullName),
                 new Claim(ClaimTypes.Name, user.userName),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.Role, u.type)
             };
 
             string issuer = _config["JWT:ValidIssuer"];
@@ -103,6 +106,7 @@ namespace DoAn.Repositories.Users
                 PhoneNumber = u.PhoneNumber,
                 UserName = u.userName,
                 dob = DateTime.UtcNow.Date,
+                type = "user"
         };
             var result = await _userManager.CreateAsync(user, u.Password);
             if (result.Succeeded)
@@ -110,6 +114,17 @@ namespace DoAn.Repositories.Users
                 return new ApiSuccessResult<bool>(true);
             }
             return new ApiErrorResult<bool>("Đăng ký không thành công");
+        }
+
+        public async Task<ApiResult<bool>> Delete(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id); //use async find
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return new ApiSuccessResult<bool>(true);
+            }
+            return new ApiErrorResult<bool>();
         }
     }
 }
