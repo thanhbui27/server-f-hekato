@@ -33,5 +33,24 @@ namespace DoAn.Controllers
 
             return Ok(await _cateRepositories.Create(cate));
         }
+        [HttpPut("Update")]
+        public async Task<IActionResult> Update(CategoryUpdate cate)
+        {
+            if(cate != null)
+            {
+                return Ok(await _cateRepositories.Update(cate));
+            }
+            return BadRequest();
+        }
+
+        [HttpDelete("Remove")]
+        public async Task<IActionResult> Remove(CategoryRemove cate)
+        {
+            if(cate != null)
+            {
+                return Ok(await _cateRepositories.remove(cate));
+            }
+            return BadRequest();
+        }
     }
 }

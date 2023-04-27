@@ -12,7 +12,9 @@ namespace DoAn.Helpers.Mapper
             //category
             CreateMap<Category, CategoryCreate>().ReverseMap();
             CreateMap<Category, CategoryGetAll>().ReverseMap();
-            
+            CreateMap<Category, CategoryRemove>().ReverseMap();
+            CreateMap<Category, CategoryUpdate>().ReverseMap();
+
             //product
             CreateMap<Product, ProductCreate>().ReverseMap();
             CreateMap<Product, ProductGetAll>().ReverseMap();
