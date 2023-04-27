@@ -10,5 +10,7 @@ namespace DoAn.Repositories.Users
         Task<ApiResult<bool>> Register(UserRegister user);
 
         Task<ApiResult<UserModels>> GetMe();
+
+        Task<ApiResult<bool>> Delete(string id);
     }
 }

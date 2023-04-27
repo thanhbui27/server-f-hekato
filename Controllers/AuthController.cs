@@ -68,5 +68,12 @@ namespace DoAn.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("delete")]
+        public async Task<IActionResult> Delete([FromBody]string id)
+        {
+            return Ok(await _userRepositories.Delete(id));
+          
+        }
     }
 }
