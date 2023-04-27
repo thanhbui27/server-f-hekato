@@ -37,5 +37,25 @@ namespace DoAn.Repositories.Categorys
 
             return new ApiSuccessResult<List<CategoryGetAll>>(t);
         }
+
+        public async Task<ApiResult<bool>> remove(CategoryRemove cate)
+        {
+            var  category = _mapper.Map<Category>(cate);
+            _context.categories.Remove(category);
+            await _context.SaveChangesAsync();
+            return new ApiSuccessResult<bool>();
+        }
+
+        public async Task<ApiResult<bool>> Update(CategoryUpdate cate)
+        {
+            var category = await _context.categories.FirstOrDefaultAsync(x => x.CategoryId == cate.CategoryId);
+            if (category != null) {
+                category.CategoryName = cate.CategoryName;
+                _context.categories.Update(category);
+                await _context.SaveChangesAsync();
+                return new ApiSuccessResult<bool>();
+            }
+            return new ApiErrorResult<bool>();
+        }
     }
 }
