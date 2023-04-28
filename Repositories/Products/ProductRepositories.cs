@@ -348,6 +348,138 @@ namespace DoAn.Repositories.Products
 
             return new ApiSuccessResult<List<GetProductImage>>(mapperImageList);
         }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductFeature()
+        {
+            var product = await _context.products
+                  .Select(p => new GetProductByPa
+                  {
+                      ProductId = p.ProductId,
+                      ProductName = p.ProductName,
+                      List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                      {
+                          Id = pi.Id,
+                          url_image = pi.url_image,
+                          timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                      }).ToList(),
+                      productAction = p.productAction,
+                      quantity = p.quantity,
+                      PriceNew = p.PriceNew,
+                      PriceOld = p.PriceOld,
+                      ShortDetails = p.ShortDetails,
+                      ProductDescription = p.ProductDescription,
+                      dateAdd = p.dateAdd,
+                      Categories = p.GetsProductInCategories
+                          .Select(pc => pc.GetCategory)
+                          .Select(c => new CategoryGetAll
+                          {
+                              CategoryId = c.CategoryId,
+                              CategoryName = c.CategoryName
+                          }).ToList()
+                  }).Where(x => x.productAction.Featured == true)
+                  .ToListAsync();
+
+            return new ApiSuccessResult<List<GetProductByPa>>(product);
+        }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductBestSeller()
+        {
+            var product = await _context.products
+                  .Select(p => new GetProductByPa
+                  {
+                      ProductId = p.ProductId,
+                      ProductName = p.ProductName,
+                      List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                      {
+                          Id = pi.Id,
+                          url_image = pi.url_image,
+                          timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                      }).ToList(),
+                      productAction = p.productAction,
+                      quantity = p.quantity,
+                      PriceNew = p.PriceNew,
+                      PriceOld = p.PriceOld,
+                      ShortDetails = p.ShortDetails,
+                      ProductDescription = p.ProductDescription,
+                      dateAdd = p.dateAdd,
+                      Categories = p.GetsProductInCategories
+                          .Select(pc => pc.GetCategory)
+                          .Select(c => new CategoryGetAll
+                          {
+                              CategoryId = c.CategoryId,
+                              CategoryName = c.CategoryName
+                          }).ToList()
+                  }).Where(x => x.productAction.BestSeller == true)
+                  .ToListAsync();
+
+            return new ApiSuccessResult<List<GetProductByPa>>(product);
+        }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductSpecialOffer()
+        {
+            var product = await _context.products
+                  .Select(p => new GetProductByPa
+                  {
+                      ProductId = p.ProductId,
+                      ProductName = p.ProductName,
+                      List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                      {
+                          Id = pi.Id,
+                          url_image = pi.url_image,
+                          timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                      }).ToList(),
+                      productAction = p.productAction,
+                      quantity = p.quantity,
+                      PriceNew = p.PriceNew,
+                      PriceOld = p.PriceOld,
+                      ShortDetails = p.ShortDetails,
+                      ProductDescription = p.ProductDescription,
+                      dateAdd = p.dateAdd,
+                      Categories = p.GetsProductInCategories
+                          .Select(pc => pc.GetCategory)
+                          .Select(c => new CategoryGetAll
+                          {
+                              CategoryId = c.CategoryId,
+                              CategoryName = c.CategoryName
+                          }).ToList()
+                  }).Where(x => x.productAction.SpecialOffer == true)
+                  .ToListAsync();
+
+            return new ApiSuccessResult<List<GetProductByPa>>(product);
+        }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductNewArrival()
+        {
+            var product = await _context.products
+                 .Select(p => new GetProductByPa
+                 {
+                     ProductId = p.ProductId,
+                     ProductName = p.ProductName,
+                     List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                     {
+                         Id = pi.Id,
+                         url_image = pi.url_image,
+                         timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                     }).ToList(),
+                     productAction = p.productAction,
+                     quantity = p.quantity,
+                     PriceNew = p.PriceNew,
+                     PriceOld = p.PriceOld,
+                     ShortDetails = p.ShortDetails,
+                     ProductDescription = p.ProductDescription,
+                     dateAdd = p.dateAdd,
+                     Categories = p.GetsProductInCategories
+                         .Select(pc => pc.GetCategory)
+                         .Select(c => new CategoryGetAll
+                         {
+                             CategoryId = c.CategoryId,
+                             CategoryName = c.CategoryName
+                         }).ToList()
+                 }).Where(x => x.productAction.NewArrival == true)
+                 .ToListAsync();
+
+            return new ApiSuccessResult<List<GetProductByPa>>(product);
+        }
     }
 }
 

@@ -16,13 +16,6 @@ namespace DoAn.Repositories.ProductAction
             _mapper = mapper;
         }
 
-        public async Task<ApiResult<bool>> Create(CreateProductAction create)
-        {
-            var _productAction = _mapper.Map<ProductActions>(create);
-            _context.productActions.Add(_productAction);
-            await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
-        }
 
 
         public async Task<ApiResult<bool>> Delete(DeleteProductAction delete)

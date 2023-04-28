@@ -22,5 +22,10 @@ namespace DoAn.Repositories.Products
         Task<ApiResult<List<GetProductImage>>> UploadImage(int id, List<IFormFile> files);
 
         Task<ApiResult<List<GetProductImage>>> GetAllImageById(int id);
+        
+        Task<ApiResult<List<GetProductByPa>>> GetProductFeature();
+        Task<ApiResult<List<GetProductByPa>>> GetProductBestSeller();
+        Task<ApiResult<List<GetProductByPa>>> GetProductSpecialOffer();
+        Task<ApiResult<List<GetProductByPa>>> GetProductNewArrival();
     }
 }

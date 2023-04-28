@@ -15,11 +15,7 @@ namespace DoAn.Controllers
             _productActionRepositories = productActionRepositories;
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> Create(CreateProductAction create)
-        {
-            return Ok(await _productActionRepositories.Create(create));
-        }
+  
         [HttpPut("update")]
         public async Task<IActionResult> Update(UpdateProductAction update)
         {

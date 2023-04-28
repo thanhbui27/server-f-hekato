@@ -26,6 +26,34 @@ namespace DoAn.Controllers
             return Ok(await _productRepositories.GetAll(request));
         }
 
+        [HttpGet("GetProductFeature")]
+        public async Task<IActionResult> GetProductFeature()
+        {
+            return Ok(await _productRepositories.GetProductFeature());
+        }
+
+
+        [HttpGet("GetProductNewArrival")]
+        public async Task<IActionResult> GetProductNewArrival()
+        {
+            return Ok(await _productRepositories.GetProductNewArrival());
+        }
+
+
+        [HttpGet("GetProductBestSeller")]
+        public async Task<IActionResult> GetProductBestSeller()
+        {
+            return Ok(await _productRepositories.GetProductBestSeller());
+        }
+
+
+        [HttpGet("GetProductSpecialOffer")]
+        public async Task<IActionResult> GetProductSpecialOffer()
+        {
+            return Ok(await _productRepositories.GetProductSpecialOffer());
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

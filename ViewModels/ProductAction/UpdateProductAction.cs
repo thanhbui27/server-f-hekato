@@ -13,5 +13,9 @@
 
         public bool SpecialOffer { get; set; }
 
+        public bool trending { get; set; }
+
+        public bool trendSmall { get; set; }
+
     }
 }

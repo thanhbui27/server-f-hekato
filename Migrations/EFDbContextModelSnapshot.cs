@@ -108,6 +108,12 @@ namespace DoAn.Migrations
                     b.Property<bool>("SpecialOffer")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("trendSmall")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("trending")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId")
