@@ -2,6 +2,7 @@
 using DoAn.Models;
 using DoAn.ViewModels.Category;
 using DoAn.ViewModels.Product;
+using DoAn.ViewModels.ProductAction;
 using DoAn.ViewModels.ProductImage;
 
 namespace DoAn.Helpers.Mapper
@@ -9,6 +10,11 @@ namespace DoAn.Helpers.Mapper
     public class MapperHelpers : Profile
     {
         public MapperHelpers() {
+            //product action
+            CreateMap<ProductActions, CreateProductAction>().ReverseMap();
+            CreateMap<ProductActions, UpdateProductAction>().ReverseMap();
+            CreateMap<ProductActions, DeleteProductAction>().ReverseMap();
+
             //category
             CreateMap<Category, CategoryCreate>().ReverseMap();
             CreateMap<Category, CategoryGetAll>().ReverseMap();

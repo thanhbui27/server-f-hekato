@@ -41,6 +41,7 @@ namespace DoAn.Repositories.Products
                     {
                         new ProductImage()
                         {
+                            ProductId = productMapper.ProductId,
                             url_image = productMapper.Image_Url,
                             timeAdd = DateTime.Now
                         }
@@ -55,6 +56,7 @@ namespace DoAn.Repositories.Products
                             ProductId = productMapper.ProductId,
                         });
                     }
+                    _logger.LogInformation(productMapper.ProductId.ToString());
                     productMapper.dateAdd = DateTime.Now;
                     productMapper.GetsProductInCategories = pr;
                     _context.products.Add(productMapper);
