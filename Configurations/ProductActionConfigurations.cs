@@ -14,11 +14,6 @@ namespace DoAn.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).UseIdentityColumn();
 
-            builder.HasMany(e => e.products)
-           .WithOne(e => e.productAction)
-           .HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.Restrict)
-           .IsRequired(false);
-
         }
     }
 }
