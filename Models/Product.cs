@@ -22,5 +22,8 @@ namespace DoAn.Models
 
         public List<ProductInCategory> GetsProductInCategories { get; set; }
         public List<ProductImage> GetsProductImage { get; set; }
+
+        public ProductActions? productAction { get; set; }
+
     }
 }

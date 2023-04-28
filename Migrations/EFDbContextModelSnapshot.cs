@@ -85,6 +85,37 @@ namespace DoAn.Migrations
                     b.ToTable("Product", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Models.ProductActions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool>("BestSeller")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Featured")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NewArrival")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SpecialOffer")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("ProductAction", (string)null);
+                });
+
             modelBuilder.Entity("DoAn.Models.ProductImage", b =>
                 {
                     b.Property<int>("Id")
@@ -307,6 +338,17 @@ namespace DoAn.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Models.ProductActions", b =>
+                {
+                    b.HasOne("DoAn.Models.Product", "products")
+                        .WithOne("productAction")
+                        .HasForeignKey("DoAn.Models.ProductActions", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("products");
+                });
+
             modelBuilder.Entity("DoAn.Models.ProductImage", b =>
                 {
                     b.HasOne("DoAn.Models.Product", "product")
@@ -347,6 +389,8 @@ namespace DoAn.Migrations
                     b.Navigation("GetsProductImage");
 
                     b.Navigation("GetsProductInCategories");
+
+                    b.Navigation("productAction");
                 });
 #pragma warning restore 612, 618
         }

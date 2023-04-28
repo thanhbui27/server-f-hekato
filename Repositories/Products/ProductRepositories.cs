@@ -9,6 +9,7 @@ using DoAn.ViewModels.Category;
 using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductImage;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Xml;
@@ -31,36 +32,49 @@ namespace DoAn.Repositories.Products
         }
         public async Task<ApiResult<bool>> create(ProductCreate create)
         {
-            var productMapper = _mapper.Map<Product>(create);
-            if (productMapper != null)
+            try
             {
-                if (productMapper.Image_Url != null)
+                var productMapper = _mapper.Map<Product>(create);
+                if (productMapper != null)
                 {
-                    productMapper.Image_Url = await this.SaveFile(create.Image_Url);
-                    productMapper.GetsProductImage = new List<ProductImage>()
+                    if (productMapper.Image_Url != null)
                     {
-                        new ProductImage()
+                        productMapper.Image_Url = await this.SaveFile(create.Image_Url);
+                        productMapper.GetsProductImage = new List<ProductImage>()
                         {
-                            url_image = productMapper.Image_Url,
-                            timeAdd = DateTime.Now
+                            new ProductImage()
+                            {
+                                url_image = productMapper.Image_Url,
+                                timeAdd = DateTime.Now
+                            }
+                        };
+                        productMapper.productAction = new ProductActions
+                        {
+                            SpecialOffer = false,
+                            NewArrival = false,
+                            Featured= false,
+                            BestSeller = false,
+                        };
+                        List<ProductInCategory> pr = new List<ProductInCategory>();
+                        for (int i = 0; i < create.Categories.Count; i++)
+                        {
+                            pr.Add(new ProductInCategory
+                            {
+                                CategoryId = create.Categories[i],
+                                ProductId = productMapper.ProductId,
+                            });
                         }
-                    };
-
-                    List<ProductInCategory> pr = new List<ProductInCategory>();
-                    for (int i = 0; i < create.Categories.Count; i++)
-                    {
-                        pr.Add(new ProductInCategory
-                        {
-                            CategoryId = create.Categories[i],
-                            ProductId = productMapper.ProductId,
-                        });
+                        _logger.LogInformation(productMapper.ProductId.ToString());
+                        productMapper.dateAdd = DateTime.Now;
+                        productMapper.GetsProductInCategories = pr;
+                        _context.products.Add(productMapper);
+                        await _context.SaveChangesAsync();
+                        return new ApiSuccessResult<bool>();
                     }
-                    productMapper.dateAdd = DateTime.Now;
-                    productMapper.GetsProductInCategories = pr;
-                    _context.products.Add(productMapper);
-                    await _context.SaveChangesAsync();
-                    return new ApiSuccessResult<bool>();
                 }
+            }catch(SqlException ex)
+            {
+                _logger.LogInformation("An error occurred while saving changes: " + ex.Message);           
             }
             return new ApiErrorResult<bool>();
         }

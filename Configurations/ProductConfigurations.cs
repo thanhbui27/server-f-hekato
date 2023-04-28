@@ -17,7 +17,8 @@ namespace DoAn.Configurations
             builder.Property(x => x.PriceOld).IsRequired();
             builder.Property(x => x.ProductDescription).IsRequired();
             builder.Property(x => x.ShortDetails).IsRequired();
-            
+
+            builder.HasOne(x => x.productAction).WithOne(x => x.products).HasForeignKey<ProductActions>(x => x.ProductId);
 
         }
     }

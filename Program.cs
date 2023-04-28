@@ -1,6 +1,7 @@
 using DoAn.EF;
 using DoAn.Models;
 using DoAn.Repositories.Categorys;
+using DoAn.Repositories.ProductAction;
 using DoAn.Repositories.Products;
 using DoAn.Repositories.StorageService;
 using DoAn.Repositories.StorageService.StorageService;
@@ -57,6 +58,7 @@ namespace DoAn
             builder.Services.AddTransient<ICategoryRepositories, CategoryRepositories>();
             builder.Services.AddTransient<IStorageService, StorageServices>();
             builder.Services.AddTransient<IProductRepositories, ProductRepositories>();
+            builder.Services.AddTransient<IProductActionRepositories, ProductActionRepositories>();
             builder.Services.AddAutoMapper(typeof(Program));
 
             string issuer = builder.Configuration["JWT:ValidIssuer"];
@@ -98,7 +100,7 @@ namespace DoAn
             var app = builder.Build();
 
             app.UseCors(builder =>
-             builder.WithOrigins("http://localhost:3000")
+             builder.WithOrigins("*")
                .AllowAnyHeader()
                .AllowAnyMethod()
           );
