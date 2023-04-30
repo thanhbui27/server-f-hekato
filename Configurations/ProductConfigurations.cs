@@ -20,6 +20,7 @@ namespace DoAn.Configurations
 
             builder.HasOne(x => x.productAction).WithOne(x => x.products).HasForeignKey<ProductActions>(x => x.ProductId);
 
+
         }
     }
 }

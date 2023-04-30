@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DoAn.Migrations
 {
     [DbContext(typeof(EFDbContext))]
-    [Migration("20230428024649_test")]
-    partial class test
+    [Migration("20230430182421_update-user")]
+    partial class updateuser
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,30 @@ namespace DoAn.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("DoAn.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("Cart", (string)null);
+                });
 
             modelBuilder.Entity("DoAn.Models.Category", b =>
                 {
@@ -109,7 +133,16 @@ namespace DoAn.Migrations
                     b.Property<bool>("SpecialOffer")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("trendSmall")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("trending")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("ProductAction", (string)null);
                 });
@@ -155,6 +188,25 @@ namespace DoAn.Migrations
                     b.ToTable("ProductInCategory", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Models.Session", b =>
+                {
+                    b.Property<int>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionId"), 1L, 1);
+
+                    b.Property<Guid>("Uid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("Uid")
+                        .IsUnique();
+
+                    b.ToTable("Session", (string)null);
+                });
+
             modelBuilder.Entity("DoAn.Models.UserModels", b =>
                 {
                     b.Property<Guid>("Id")
@@ -163,6 +215,9 @@ namespace DoAn.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("CMND")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("nvarchar(max)");
@@ -201,6 +256,9 @@ namespace DoAn.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("address")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("dob")
@@ -336,13 +394,37 @@ namespace DoAn.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Models.Cart", b =>
+                {
+                    b.HasOne("DoAn.Models.Session", "SessUser")
+                        .WithMany("Carts")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SessUser");
+                });
+
             modelBuilder.Entity("DoAn.Models.Product", b =>
                 {
-                    b.HasOne("DoAn.Models.ProductActions", "productAction")
-                        .WithMany("products")
-                        .HasForeignKey("ProductId");
+                    b.HasOne("DoAn.Models.Cart", "cart")
+                        .WithMany("product")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("productAction");
+                    b.Navigation("cart");
+                });
+
+            modelBuilder.Entity("DoAn.Models.ProductActions", b =>
+                {
+                    b.HasOne("DoAn.Models.Product", "products")
+                        .WithOne("productAction")
+                        .HasForeignKey("DoAn.Models.ProductActions", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("products");
                 });
 
             modelBuilder.Entity("DoAn.Models.ProductImage", b =>
@@ -375,6 +457,22 @@ namespace DoAn.Migrations
                     b.Navigation("GetProducts");
                 });
 
+            modelBuilder.Entity("DoAn.Models.Session", b =>
+                {
+                    b.HasOne("DoAn.Models.UserModels", "user")
+                        .WithOne("session")
+                        .HasForeignKey("DoAn.Models.Session", "Uid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("user");
+                });
+
+            modelBuilder.Entity("DoAn.Models.Cart", b =>
+                {
+                    b.Navigation("product");
+                });
+
             modelBuilder.Entity("DoAn.Models.Category", b =>
                 {
                     b.Navigation("GetsProductInCategories");
@@ -385,11 +483,19 @@ namespace DoAn.Migrations
                     b.Navigation("GetsProductImage");
 
                     b.Navigation("GetsProductInCategories");
+
+                    b.Navigation("productAction");
                 });
 
-            modelBuilder.Entity("DoAn.Models.ProductActions", b =>
+            modelBuilder.Entity("DoAn.Models.Session", b =>
                 {
-                    b.Navigation("products");
+                    b.Navigation("Carts");
+                });
+
+            modelBuilder.Entity("DoAn.Models.UserModels", b =>
+                {
+                    b.Navigation("session")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

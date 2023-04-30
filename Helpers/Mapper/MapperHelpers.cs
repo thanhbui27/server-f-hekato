@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DoAn.Models;
+using DoAn.ViewModels.Cart;
 using DoAn.ViewModels.Category;
 using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductAction;
@@ -10,6 +11,12 @@ namespace DoAn.Helpers.Mapper
     public class MapperHelpers : Profile
     {
         public MapperHelpers() {
+            //cart
+            CreateMap<Cart, AddToCart>().ReverseMap();
+            CreateMap<Cart, GetProductToCart>().ReverseMap();
+            CreateMap<Cart, RemoveItemToCart>().ReverseMap();
+            CreateMap<Cart, UpdateToCart>().ReverseMap();
+
             //product action
             CreateMap<ProductActions, CreateProductAction>().ReverseMap();
             CreateMap<ProductActions, UpdateProductAction>().ReverseMap();

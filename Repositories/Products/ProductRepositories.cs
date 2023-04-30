@@ -101,63 +101,96 @@ namespace DoAn.Repositories.Products
             return new ApiErrorResult<bool>();
         }
 
-        public async Task<PagedResult<ProductGetAll>> GetAll(GetProductRequestPagi request)
+        public async Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request)
         {
 
-            var query = (from p in _context.products
-                         join pic in _context.GetsProductInCategory on p.ProductId equals pic.ProductId into picc
-                         from pics in picc.DefaultIfEmpty()
-                         join c in _context.categories on pics.CategoryId equals c.CategoryId
-                         select new { p, c });
+            //var query = (from p in _context.products
+            //             join pic in _context.GetsProductInCategory on p.ProductId equals pic.ProductId into picc
+            //             from pics in picc.DefaultIfEmpty()
+            //             join c in _context.categories on pics.CategoryId equals c.CategoryId
+            //             select new { p, c });
 
+            //int totalRow = await _context.products.CountAsync();
+
+            //if (!string.IsNullOrEmpty(request.q))
+            //    query = query.Where(x => x.p.ProductName.Contains(request.q));
+
+
+
+            //var data = await query
+            //   .Select(x => new ProductGetAll()
+            //   {
+            //       ProductId = x.p.ProductId,
+            //       ProductName = x.p.ProductName,
+            //       PriceOld = x.p.PriceOld,
+            //       quantity = x.p.quantity,
+            //       PriceNew = x.p.PriceNew,
+            //       Image_Url = x.p.Image_Url,
+            //       dateAdd = x.p.dateAdd,
+            //       ProductDescription = x.p.ProductDescription,
+            //       ShortDetails = x.p.ShortDetails,
+            //       Categories = new List<CategoryGetAll>()
+            //      {
+            //          new CategoryGetAll()
+            //          {
+            //              CategoryId = x.c.CategoryId,
+            //              CategoryName = x.c.CategoryName,
+            //          }
+            //      }
+
+            //   }).ToListAsync();
+
+            //data = data.GroupBy(p => p.ProductId)
+            //.Select(g => new ProductGetAll
+            //{
+            //    ProductId = g.Key,
+            //    ProductName = g.First().ProductName,
+            //    Image_Url = g.First().Image_Url,
+            //    quantity= g.First().quantity,
+            //    PriceNew = g.First().PriceNew,
+            //    PriceOld = g.First().PriceOld,
+            //    ShortDetails = g.First().ShortDetails,
+            //    ProductDescription = g.First().ProductDescription,
+            //    dateAdd = g.First().dateAdd,
+            //    Categories = g.SelectMany(p => p.Categories).ToList()
+            //}).Skip((request.PageIndex - 1) * request.PageSize)
+            // .Take(request.PageSize).ToList();
+
+            var query = _context.products
+                .Select(p => new GetProductByPa
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                    {
+                        Id = pi.Id,
+                        url_image = pi.url_image,
+                        timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                    }).ToList(),
+                    productAction = p.productAction,
+                    quantity = p.quantity,
+                    PriceNew = p.PriceNew,
+                    PriceOld = p.PriceOld,
+                    ShortDetails = p.ShortDetails,
+                    ProductDescription = p.ProductDescription,
+                    dateAdd = p.dateAdd,
+                    Categories = p.GetsProductInCategories
+                        .Select(pc => pc.GetCategory)
+                        .Select(c => new CategoryGetAll
+                        {
+                            CategoryId = c.CategoryId,
+                            CategoryName = c.CategoryName
+                        }).ToList()
+                });
             int totalRow = await _context.products.CountAsync();
 
             if (!string.IsNullOrEmpty(request.q))
-                query = query.Where(x => x.p.ProductName.Contains(request.q));
+                query = query.Where(x => x.ProductName.Contains(request.q));
 
+            var data = query.Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize).ToList();
 
-
-            var data = await query
-               .Select(x => new ProductGetAll()
-               {
-                   ProductId = x.p.ProductId,
-                   ProductName = x.p.ProductName,
-                   PriceOld = x.p.PriceOld,
-                   quantity = x.p.quantity,
-                   PriceNew = x.p.PriceNew,
-                   Image_Url = x.p.Image_Url,
-                   dateAdd = x.p.dateAdd,
-                   ProductDescription = x.p.ProductDescription,
-                   ShortDetails = x.p.ShortDetails,
-                   Categories = new List<CategoryGetAll>()
-                  {
-                      new CategoryGetAll()
-                      {
-                          CategoryId = x.c.CategoryId,
-                          CategoryName = x.c.CategoryName,
-                      }
-                  }
-
-               }).ToListAsync();
-
-            data = data.GroupBy(p => p.ProductId)
-            .Select(g => new ProductGetAll
-            {
-                ProductId = g.Key,
-                ProductName = g.First().ProductName,
-                Image_Url = g.First().Image_Url,
-                quantity= g.First().quantity,
-                PriceNew = g.First().PriceNew,
-                PriceOld = g.First().PriceOld,
-                ShortDetails = g.First().ShortDetails,
-                ProductDescription = g.First().ProductDescription,
-                dateAdd = g.First().dateAdd,
-                Categories = g.SelectMany(p => p.Categories).ToList()
-            }).Skip((request.PageIndex - 1) * request.PageSize)
-             .Take(request.PageSize).ToList();
-
-
-            var pagedResult = new PagedResult<ProductGetAll>()
+            var pagedResult = new PagedResult<GetProductByPa>()
             {
                 TotalRecords = totalRow,
                 PageSize = request.PageSize,
@@ -477,6 +510,72 @@ namespace DoAn.Repositories.Products
                          }).ToList()
                  }).Where(x => x.productAction.NewArrival == true)
                  .ToListAsync();
+
+            return new ApiSuccessResult<List<GetProductByPa>>(product);
+        }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductTrending()
+        {
+            var product = await _context.products
+                .Select(p => new GetProductByPa
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                    {
+                        Id = pi.Id,
+                        url_image = pi.url_image,
+                        timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                    }).ToList(),
+                    productAction = p.productAction,
+                    quantity = p.quantity,
+                    PriceNew = p.PriceNew,
+                    PriceOld = p.PriceOld,
+                    ShortDetails = p.ShortDetails,
+                    ProductDescription = p.ProductDescription,
+                    dateAdd = p.dateAdd,
+                    Categories = p.GetsProductInCategories
+                        .Select(pc => pc.GetCategory)
+                        .Select(c => new CategoryGetAll
+                        {
+                            CategoryId = c.CategoryId,
+                            CategoryName = c.CategoryName
+                        }).ToList()
+                }).Where(x => x.productAction.trending == true)
+                .ToListAsync();
+
+            return new ApiSuccessResult<List<GetProductByPa>>(product);
+        }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductTrendSmall()
+        {
+            var product = await _context.products
+                .Select(p => new GetProductByPa
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                    {
+                        Id = pi.Id,
+                        url_image = pi.url_image,
+                        timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                    }).ToList(),
+                    productAction = p.productAction,
+                    quantity = p.quantity,
+                    PriceNew = p.PriceNew,
+                    PriceOld = p.PriceOld,
+                    ShortDetails = p.ShortDetails,
+                    ProductDescription = p.ProductDescription,
+                    dateAdd = p.dateAdd,
+                    Categories = p.GetsProductInCategories
+                        .Select(pc => pc.GetCategory)
+                        .Select(c => new CategoryGetAll
+                        {
+                            CategoryId = c.CategoryId,
+                            CategoryName = c.CategoryName
+                        }).ToList()
+                }).Where(x => x.productAction.trendSmall == true).OrderByDescending(x => x.ProductId)
+                .ToListAsync();
 
             return new ApiSuccessResult<List<GetProductByPa>>(product);
         }

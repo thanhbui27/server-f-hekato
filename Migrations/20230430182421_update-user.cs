@@ -4,22 +4,31 @@
 
 namespace DoAn.Migrations
 {
-    public partial class updatetypeuser : Migration
+    public partial class updateuser : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "type",
+                name: "CMND",
                 table: "Users",
                 type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "address",
+                table: "Users",
+                type: "nvarchar(max)",
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "type",
+                name: "CMND",
+                table: "Users");
+
+            migrationBuilder.DropColumn(
+                name: "address",
                 table: "Users");
         }
     }

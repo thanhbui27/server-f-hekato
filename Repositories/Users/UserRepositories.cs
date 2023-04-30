@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DoAn.EF;
 using DoAn.Helpers.ApiResponse;
 using DoAn.Migrations;
 using DoAn.Models;
@@ -20,13 +21,15 @@ namespace DoAn.Repositories.Users
         private readonly IConfiguration _config;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMapper _mapper;
-        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config, IHttpContextAccessor httpContextAccessor, IMapper mapper)
+        private readonly EFDbContext _context;
+        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config, IHttpContextAccessor httpContextAccessor, IMapper mapper, EFDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
+            _context = dbContext;
         }
         public async Task<ApiResult<string>> Login(UserLogin user)
         {
@@ -83,6 +86,11 @@ namespace DoAn.Repositories.Users
         public async Task<ApiResult<UserModels>> GetMe()
         {
             var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+            user.session = _context.session_u.Select(s => new Session
+            {
+                SessionId = s.SessionId,
+                Uid = s.Uid
+            }).Where(u => u.Uid == user.Id).FirstOrDefault();
             
             return new ApiSuccessResult<UserModels>(user);
         }
@@ -106,11 +114,19 @@ namespace DoAn.Repositories.Users
                 PhoneNumber = u.PhoneNumber,
                 UserName = u.userName,
                 dob = DateTime.UtcNow.Date,
-                type = "user"
-        };
+                type = "user"           
+            };
+
+   
+
             var result = await _userManager.CreateAsync(user, u.Password);
             if (result.Succeeded)
             {
+                _context.session_u.Add(new Session
+                {
+                    Uid = user.Id,
+                });
+                await _context.SaveChangesAsync();
                 return new ApiSuccessResult<bool>(true);
             }
             return new ApiErrorResult<bool>("Đăng ký không thành công");

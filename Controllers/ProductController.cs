@@ -53,6 +53,17 @@ namespace DoAn.Controllers
             return Ok(await _productRepositories.GetProductSpecialOffer());
         }
 
+        [HttpGet("GetProductTrending")]
+        public async Task<IActionResult> GetProductTrending()
+        {
+            return Ok(await _productRepositories.GetProductTrending());
+        }
+
+        [HttpGet("GetProductTrendSmall")]
+        public async Task<IActionResult> GetProductTrendSmall()
+        {
+            return Ok(await _productRepositories.GetProductTrendSmall());
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

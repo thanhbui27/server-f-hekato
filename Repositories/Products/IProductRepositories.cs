@@ -7,7 +7,7 @@ namespace DoAn.Repositories.Products
 {
     public interface IProductRepositories
     {
-        Task<PagedResult<ProductGetAll>> GetAll(GetProductRequestPagi request);
+        Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request);
 
         Task<ApiResult<bool>> create(ProductCreate create);
 
@@ -27,5 +27,7 @@ namespace DoAn.Repositories.Products
         Task<ApiResult<List<GetProductByPa>>> GetProductBestSeller();
         Task<ApiResult<List<GetProductByPa>>> GetProductSpecialOffer();
         Task<ApiResult<List<GetProductByPa>>> GetProductNewArrival();
+        Task<ApiResult<List<GetProductByPa>>> GetProductTrending();
+        Task<ApiResult<List<GetProductByPa>>> GetProductTrendSmall();
     }
 }

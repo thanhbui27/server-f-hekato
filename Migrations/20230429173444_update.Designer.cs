@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DoAn.Migrations
 {
     [DbContext(typeof(EFDbContext))]
-    [Migration("20230426170647_update-product")]
-    partial class updateproduct
+    [Migration("20230429173444_update")]
+    partial class update
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,30 @@ namespace DoAn.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("DoAn.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("Cart", (string)null);
+                });
 
             modelBuilder.Entity("DoAn.Models.Category", b =>
                 {
@@ -45,7 +69,6 @@ namespace DoAn.Migrations
             modelBuilder.Entity("DoAn.Models.Product", b =>
                 {
                     b.Property<int>("ProductId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"), 1L, 1);
@@ -87,6 +110,43 @@ namespace DoAn.Migrations
                     b.ToTable("Product", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Models.ProductActions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool>("BestSeller")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Featured")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NewArrival")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SpecialOffer")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("trendSmall")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("trending")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("ProductAction", (string)null);
+                });
+
             modelBuilder.Entity("DoAn.Models.ProductImage", b =>
                 {
                     b.Property<int>("Id")
@@ -126,6 +186,25 @@ namespace DoAn.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("ProductInCategory", (string)null);
+                });
+
+            modelBuilder.Entity("DoAn.Models.Session", b =>
+                {
+                    b.Property<int>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionId"), 1L, 1);
+
+                    b.Property<Guid>("Uid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("Uid")
+                        .IsUnique();
+
+                    b.ToTable("Session", (string)null);
                 });
 
             modelBuilder.Entity("DoAn.Models.UserModels", b =>
@@ -180,6 +259,10 @@ namespace DoAn.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("fullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -305,6 +388,40 @@ namespace DoAn.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DoAn.Models.Cart", b =>
+                {
+                    b.HasOne("DoAn.Models.Session", "SessUser")
+                        .WithMany("Carts")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SessUser");
+                });
+
+            modelBuilder.Entity("DoAn.Models.Product", b =>
+                {
+                    b.HasOne("DoAn.Models.Cart", "cart")
+                        .WithMany("product")
+                        .HasForeignKey("ProductId")
+                        .HasPrincipalKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("cart");
+                });
+
+            modelBuilder.Entity("DoAn.Models.ProductActions", b =>
+                {
+                    b.HasOne("DoAn.Models.Product", "products")
+                        .WithOne("productAction")
+                        .HasForeignKey("DoAn.Models.ProductActions", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("products");
+                });
+
             modelBuilder.Entity("DoAn.Models.ProductImage", b =>
                 {
                     b.HasOne("DoAn.Models.Product", "product")
@@ -335,6 +452,22 @@ namespace DoAn.Migrations
                     b.Navigation("GetProducts");
                 });
 
+            modelBuilder.Entity("DoAn.Models.Session", b =>
+                {
+                    b.HasOne("DoAn.Models.UserModels", "user")
+                        .WithOne("session")
+                        .HasForeignKey("DoAn.Models.Session", "Uid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("user");
+                });
+
+            modelBuilder.Entity("DoAn.Models.Cart", b =>
+                {
+                    b.Navigation("product");
+                });
+
             modelBuilder.Entity("DoAn.Models.Category", b =>
                 {
                     b.Navigation("GetsProductInCategories");
@@ -345,6 +478,19 @@ namespace DoAn.Migrations
                     b.Navigation("GetsProductImage");
 
                     b.Navigation("GetsProductInCategories");
+
+                    b.Navigation("productAction");
+                });
+
+            modelBuilder.Entity("DoAn.Models.Session", b =>
+                {
+                    b.Navigation("Carts");
+                });
+
+            modelBuilder.Entity("DoAn.Models.UserModels", b =>
+                {
+                    b.Navigation("session")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

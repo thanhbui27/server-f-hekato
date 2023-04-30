@@ -8,5 +8,10 @@ namespace DoAn.Models
 
         public string type { get; set; }
         public DateTime? dob { get; set; } 
+
+        public string? address { get; set; }
+
+        public string? CMND { get; set; } 
+        public Session session { get; set; }
     }
 }

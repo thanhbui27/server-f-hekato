@@ -25,5 +25,7 @@ namespace DoAn.Models
 
         public ProductActions? productAction { get; set; }
 
+        public Cart? cart { get; set; }
+
     }
 }

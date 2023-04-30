@@ -1,5 +1,6 @@
 using DoAn.EF;
 using DoAn.Models;
+using DoAn.Repositories.Carts;
 using DoAn.Repositories.Categorys;
 using DoAn.Repositories.ProductAction;
 using DoAn.Repositories.Products;
@@ -59,6 +60,7 @@ namespace DoAn
             builder.Services.AddTransient<IStorageService, StorageServices>();
             builder.Services.AddTransient<IProductRepositories, ProductRepositories>();
             builder.Services.AddTransient<IProductActionRepositories, ProductActionRepositories>();
+            builder.Services.AddTransient<ICartRepositories, CartRepositories>();
             builder.Services.AddAutoMapper(typeof(Program));
 
             string issuer = builder.Configuration["JWT:ValidIssuer"];
