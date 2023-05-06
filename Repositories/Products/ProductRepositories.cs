@@ -103,59 +103,6 @@ namespace DoAn.Repositories.Products
 
         public async Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request)
         {
-
-            //var query = (from p in _context.products
-            //             join pic in _context.GetsProductInCategory on p.ProductId equals pic.ProductId into picc
-            //             from pics in picc.DefaultIfEmpty()
-            //             join c in _context.categories on pics.CategoryId equals c.CategoryId
-            //             select new { p, c });
-
-            //int totalRow = await _context.products.CountAsync();
-
-            //if (!string.IsNullOrEmpty(request.q))
-            //    query = query.Where(x => x.p.ProductName.Contains(request.q));
-
-
-
-            //var data = await query
-            //   .Select(x => new ProductGetAll()
-            //   {
-            //       ProductId = x.p.ProductId,
-            //       ProductName = x.p.ProductName,
-            //       PriceOld = x.p.PriceOld,
-            //       quantity = x.p.quantity,
-            //       PriceNew = x.p.PriceNew,
-            //       Image_Url = x.p.Image_Url,
-            //       dateAdd = x.p.dateAdd,
-            //       ProductDescription = x.p.ProductDescription,
-            //       ShortDetails = x.p.ShortDetails,
-            //       Categories = new List<CategoryGetAll>()
-            //      {
-            //          new CategoryGetAll()
-            //          {
-            //              CategoryId = x.c.CategoryId,
-            //              CategoryName = x.c.CategoryName,
-            //          }
-            //      }
-
-            //   }).ToListAsync();
-
-            //data = data.GroupBy(p => p.ProductId)
-            //.Select(g => new ProductGetAll
-            //{
-            //    ProductId = g.Key,
-            //    ProductName = g.First().ProductName,
-            //    Image_Url = g.First().Image_Url,
-            //    quantity= g.First().quantity,
-            //    PriceNew = g.First().PriceNew,
-            //    PriceOld = g.First().PriceOld,
-            //    ShortDetails = g.First().ShortDetails,
-            //    ProductDescription = g.First().ProductDescription,
-            //    dateAdd = g.First().dateAdd,
-            //    Categories = g.SelectMany(p => p.Categories).ToList()
-            //}).Skip((request.PageIndex - 1) * request.PageSize)
-            // .Take(request.PageSize).ToList();
-
             var query = _context.products
                 .Select(p => new GetProductByPa
                 {
@@ -227,7 +174,7 @@ namespace DoAn.Repositories.Products
 
                 if(update.quantity != null)
                 {
-                    product.quantity = update.quantity;
+                    product.quantity = (int)update.quantity;
                 }
 
 

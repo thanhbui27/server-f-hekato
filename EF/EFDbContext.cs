@@ -25,6 +25,10 @@ namespace DoAn.EF
             modelBuilder.ApplyConfiguration(new ProductActionConfigurations());
             modelBuilder.ApplyConfiguration(new CartConfigurations());
             modelBuilder.ApplyConfiguration(new SessionConfigurations());
+            modelBuilder.ApplyConfiguration(new OrderDetailsConfigurations());
+            modelBuilder.ApplyConfiguration(new OrdersConfigurations());
+         
+            
 
             modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("AspNetUserRoles").HasKey(x => new { x.UserId, x.RoleId });
             modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("AspNetUserLogins").HasKey(x => x.UserId);
@@ -40,6 +44,8 @@ namespace DoAn.EF
         public DbSet<ProductActions> productActions { get; set; }
         public DbSet<Cart> carts { get; set; }
         public DbSet<Session> session_u { get; set; }
+        public DbSet<OrderDetails> orderDetails { get; set; }
+        public DbSet<Orders> orders { get; set; }
 
     }
 }
