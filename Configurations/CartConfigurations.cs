@@ -17,7 +17,7 @@ namespace DoAn.Configurations
 
             builder.HasOne(x => x.SessUser).WithMany(x => x.Carts).HasForeignKey(x => x.SessionId);
 
-            builder.HasMany(x => x.product).WithOne(x => x.cart).HasForeignKey(x => x.ProductId);
+
         }
     }
 }

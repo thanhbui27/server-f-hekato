@@ -7,7 +7,7 @@
 
         public IFormFile? Image_Url { get; set; }
 
-        public int quantity { get; set; }
+        public int? quantity { get; set; }
         public decimal? PriceNew { get; set; }
         public decimal? PriceOld { get; set; }
 

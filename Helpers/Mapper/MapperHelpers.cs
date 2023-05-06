@@ -2,15 +2,21 @@
 using DoAn.Models;
 using DoAn.ViewModels.Cart;
 using DoAn.ViewModels.Category;
+using DoAn.ViewModels.Orders;
 using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductAction;
 using DoAn.ViewModels.ProductImage;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DoAn.Helpers.Mapper
 {
     public class MapperHelpers : Profile
     {
         public MapperHelpers() {
+            //order
+
+            CreateMap<Orders, CreateOrders>().ReverseMap();
+
             //cart
             CreateMap<Cart, AddToCart>().ReverseMap();
             CreateMap<Cart, GetProductToCart>().ReverseMap();

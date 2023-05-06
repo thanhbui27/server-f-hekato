@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DoAn.Models
 {
@@ -13,5 +14,8 @@ namespace DoAn.Models
 
         public string? CMND { get; set; } 
         public Session session { get; set; }
+
+        public List<Orders> orders { get; set; }
+
     }
 }

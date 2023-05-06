@@ -27,5 +27,7 @@ namespace DoAn.Models
 
         public Cart? cart { get; set; }
 
+        public List<OrderDetails> orderDetails { get; set; }
+
     }
 }
