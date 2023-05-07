@@ -2,6 +2,7 @@
 using DoAn.Models;
 using DoAn.ViewModels.Cart;
 using DoAn.ViewModels.Category;
+using DoAn.ViewModels.Comments;
 using DoAn.ViewModels.Orders;
 using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductAction;
@@ -13,6 +14,10 @@ namespace DoAn.Helpers.Mapper
     public class MapperHelpers : Profile
     {
         public MapperHelpers() {
+
+            //comment
+            CreateMap<CommentsProducts , CreateComments>().ReverseMap();
+
             //order
 
             CreateMap<Orders, CreateOrders>().ReverseMap();

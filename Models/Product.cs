@@ -29,5 +29,6 @@ namespace DoAn.Models
 
         public List<OrderDetails> orderDetails { get; set; }
 
+        public List<CommentsProducts> comments { get; set; }
     }
 }
