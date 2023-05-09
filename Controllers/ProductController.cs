@@ -1,5 +1,6 @@
 ﻿using DoAn.Repositories.Products;
 using DoAn.ViewModels.Product;
+using DoAn.ViewModels.ProductImage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -91,11 +92,11 @@ namespace DoAn.Controllers
 
         [HttpPost("UploadImage")]
 
-        public async Task<IActionResult> UploadImage([FromQuery] int id, [FromQuery] List<IFormFile> list)
+        public async Task<IActionResult> UploadImage([FromForm]ProductUploadImage upload)
         {
-            if(list != null)
+            if (upload != null)
             {
-                return Ok(await _productRepositories.UploadImage(id, list));
+                return Ok(await _productRepositories.UploadImage(upload.id, upload.files));
             }
             return BadRequest();
         }

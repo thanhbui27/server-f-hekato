@@ -322,7 +322,13 @@ namespace DoAn.Repositories.Products
 
         public async Task<ApiResult<List<GetProductImage>>> GetAllImageById(int id)
         {
-            var listImage = _context.ProductImage.Where(p => p.ProductId == id).ToList();
+            var listImage = _context.ProductImage.Select(x => new ProductImage
+            {
+                ProductId = x.ProductId,
+                url_image = x.url_image,
+                Id = id,
+                timeAdd = x.timeAdd
+            }).Where(p => p.ProductId == id).ToList();
 
             var mapperImageList = _mapper.Map<List<GetProductImage>>(listImage);
 
