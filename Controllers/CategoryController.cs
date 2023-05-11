@@ -20,37 +20,46 @@ namespace DoAn.Controllers
         [HttpGet("GetAllCategory")]
         public async Task<IActionResult> GetAll()
         {
-            return Ok( await _cateRepositories.GetAll());
+            var result = await _cateRepositories.GetAll();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
         [HttpPost("CreateCategory")]
         public async Task<IActionResult> Create(CategoryCreate cate)
         {
-            if(cate.CategoryName == null)
+            var result = await _cateRepositories.Create(cate);
+            if (result.IsSuccessed)
             {
-                return BadRequest();
+                return Ok(result);
             }
+            return BadRequest(result);
 
-            return Ok(await _cateRepositories.Create(cate));
         }
         [HttpPut("Update")]
         public async Task<IActionResult> Update(CategoryUpdate cate)
         {
-            if(cate != null)
+            var result = await _cateRepositories.Update(cate);
+            if (result.IsSuccessed)
             {
-                return Ok(await _cateRepositories.Update(cate));
+                return Ok(result);
             }
-            return BadRequest();
+            return BadRequest(result);
+
         }
 
         [HttpDelete("Remove")]
         public async Task<IActionResult> Remove(CategoryRemove cate)
         {
-            if(cate != null)
+            var result = await _cateRepositories.remove(cate);
+            if (result.IsSuccessed)
             {
-                return Ok(await _cateRepositories.remove(cate));
+                return Ok(result);
             }
-            return BadRequest();
+            return BadRequest(result);
         }
     }
 }

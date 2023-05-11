@@ -59,7 +59,11 @@ namespace DoAn.Repositories.Order
             _context.orders.Add(orders);
 
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>(true);
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed = true,
+                Message = "Đơn hàng đang được xử lý vui lòng đợi"
+            };
 
         }
 
@@ -81,7 +85,11 @@ namespace DoAn.Repositories.Order
         {
             _context.orders.Remove(new Orders { OrderId = OrderId });
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>(true);
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed = true,
+                Message = "Xoá đơn hàng thành công"
+            };
         }
 
     

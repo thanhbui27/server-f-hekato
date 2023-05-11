@@ -141,9 +141,13 @@ namespace DoAn.Repositories.Users
             var result = await _userManager.DeleteAsync(user);
             if (result.Succeeded)
             {
-                return new ApiSuccessResult<bool>(true);
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed= true,
+                    Message = "Xoá user thành công"
+                };
             }
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>("Xoá user không thành công");
         }
 
         public async Task<PagedResult<UserModels>> getAllUser(GetAllUser getAll)

@@ -19,19 +19,35 @@ namespace DoAn.Controllers
         [HttpGet("GetOrderById")]
         public async Task<IActionResult> GetOrderById(Guid uid)
         {
-            return Ok(await _IOrderRepositories.getOrderByUser(uid));
+            var result = await _IOrderRepositories.getOrderByUser(uid);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
         [HttpPost("Create")]
         public async Task<IActionResult> CreateOrders(CreateOrders create)
         {
-            return Ok(await _IOrderRepositories.create(create));
+            var result = await _IOrderRepositories.create(create);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+     
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            return Ok(await _IOrderRepositories.remove(id));
+            var result = await _IOrderRepositories.remove(id);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }

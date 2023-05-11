@@ -19,13 +19,24 @@ namespace DoAn.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> Update(UpdateProductAction update)
         {
-            return Ok(await _productActionRepositories.Update(update));
+            var result = await _productActionRepositories.Update(update);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
         }
 
         [HttpDelete("remove")]
         public async Task<IActionResult> Delete(DeleteProductAction remove)
         {
-            return Ok(await _productActionRepositories.Delete(remove));
+            var result = await _productActionRepositories.Delete(remove);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }

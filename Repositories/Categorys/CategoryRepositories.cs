@@ -24,9 +24,17 @@ namespace DoAn.Repositories.Categorys
                 var category = _mapper.Map<Category>(cate);
                  _context.categories.Add(category);
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<bool>
+                {
+                    Message = "Thêm category thành công",
+                    IsSuccessed= true,
+                };
             }
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed= false,
+                Message = "Không thể thêm category"
+            };
         }
 
         public async Task<ApiResult<List<CategoryGetAll>>> GetAll()
@@ -43,7 +51,11 @@ namespace DoAn.Repositories.Categorys
             var  category = _mapper.Map<Category>(cate);
             _context.categories.Remove(category);
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed = true,
+                Message = "xoá category thành công"
+            };
         }
 
         public async Task<ApiResult<bool>> Update(CategoryUpdate cate)
@@ -53,9 +65,17 @@ namespace DoAn.Repositories.Categorys
                 category.CategoryName = cate.CategoryName;
                 _context.categories.Update(category);
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed = true,
+                    Message = "Cập nhật category thành công"
+                };
             }
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Cập nhật sản phẩm thất bại"
+            };
         }
     }
 }
