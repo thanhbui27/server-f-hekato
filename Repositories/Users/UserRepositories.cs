@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using DoAn.EF;
 using DoAn.Helpers.ApiResponse;
+using DoAn.Helpers.Pagination;
 using DoAn.Migrations;
 using DoAn.Models;
 using DoAn.ViewModels.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -141,6 +144,117 @@ namespace DoAn.Repositories.Users
                 return new ApiSuccessResult<bool>(true);
             }
             return new ApiErrorResult<bool>();
+        }
+
+        public async Task<PagedResult<UserModels>> getAllUser(GetAllUser getAll)
+        {
+            var user = _context.Users.ToList();
+
+            int totalRow = await _context.Users.CountAsync();
+
+            if (!string.IsNullOrEmpty(getAll.p))
+            {
+                user = (List<UserModels>)user.Where(x => x.fullName.Contains(getAll.p));
+            }
+
+            var data = user.Skip((getAll.PageIndex - 1) * getAll.PageSize).Take(getAll.PageSize).ToList();
+
+            return new PagedResult<UserModels>
+            {
+                Items = data,
+                PageSize = getAll.PageSize,
+                PageIndex = getAll.PageIndex,
+                TotalRecords = totalRow
+            };
+
+        }
+
+        public async Task<ApiResult<bool>> LockUser(string id, DateTime? endDate)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+
+                if (user != null)
+                {
+                    user.LockoutEnd = endDate;
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Khoá user thành công"
+                    };
+                }
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message.ToString()
+                };
+
+            }
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Có lỗi xảy ra vui lòng thử lại"
+            };
+
+
+        }
+
+        public async Task<ApiResult<bool>> UnLockUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user != null)
+            {
+                user.LockoutEnd = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed = true,
+                    Message = "Mở khoá user thành công"
+                };
+            }
+
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Có lỗi xảy ra vui lòng thử lại"
+            };
+
+        }
+
+        public async Task<ApiResult<bool>> decentralization(string id, string type)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                if(type == "admin" || type == "user")
+                {
+                    user.type = type;
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Phân quyền thành công"
+                    };
+                }else
+                {
+                    return new ApiErrorResult<bool>
+                    {
+                        IsSuccessed = false,
+                        Message = "Loại quyền không đúng định dạng"
+                    };
+                }
+             
+            }
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Có lỗi xảy ra vui lòng thử lại"
+            };
         }
     }
 }
