@@ -21,14 +21,22 @@ namespace DoAn.Repositories.Comment
             var cm = _mapper.Map<CommentsProducts>(comment);
              _context.commentProducts.Add(cm);
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed= true,
+                Message = "Thêm bình luận thành công"
+            };
         }
 
         public async Task<ApiResult<bool>> delete(int id)
         {
             _context.commentProducts.Remove(new CommentsProducts { CommentsId = id});
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed = true,
+                Message = "Xoá bình luận thành công"
+            };
         }
 
         public async Task<ApiResult<List<CommentsProducts>>> getComment(int id)

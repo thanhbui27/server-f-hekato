@@ -69,14 +69,22 @@ namespace DoAn.Repositories.Products
                         productMapper.GetsProductInCategories = pr;
                         _context.products.Add(productMapper);
                         await _context.SaveChangesAsync();
-                        return new ApiSuccessResult<bool>();
+                        return new ApiSuccessResult<bool>
+                        {
+                            IsSuccessed = true,
+                            Message = "Thêm sản phẩm thành công"
+                        };
                     }
                 }
             }catch(SqlException ex)
             {
                 _logger.LogInformation("An error occurred while saving changes: " + ex.Message);           
             }
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Thêm sản phẩm thất bại"
+            };
         }
 
         private async Task<string> SaveFile(IFormFile file)
@@ -95,10 +103,18 @@ namespace DoAn.Repositories.Products
             {
                 _context.products.Remove(product);
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed = true,
+                    Message = "Xoá sản phẩm thành công"
+                };
             }
 
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Sản phẩm không tồn tại"
+            };
         }
 
         public async Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request)
@@ -214,7 +230,11 @@ namespace DoAn.Repositories.Products
                         }else
                         {
                   
-                            return new ApiErrorResult<bool>();
+                            return new ApiErrorResult<bool>
+                            {
+                                IsSuccessed= false,
+                                Message = "Không thể cập nhật category cho sản phẩm"
+                            };
                         }
                       
                     }
@@ -238,9 +258,17 @@ namespace DoAn.Repositories.Products
                 product.dateAdd = DateTime.Now;
                 _context.products.Update(product);
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>(true);
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed= true,
+                    Message = "Cập nhật sản phẩm thành công"
+                };
             }
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Cập nhật sản phẩm thất bại"
+            }; ;
         }
 
         public async Task<ApiResult<ProductGetById>> GetById(int id)
@@ -290,10 +318,18 @@ namespace DoAn.Repositories.Products
                 _context.GetsProductInCategory.Remove(produc);
                 await _context.SaveChangesAsync();
 
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed = true,
+                    Message = "Xoá category của sản phẩm thành công"
+                };
 
             }
-            return new ApiErrorResult<bool>();
+            return new ApiErrorResult<bool>
+            {
+                IsSuccessed = false,
+                Message = "Xoá category của sản phẩm thất bại"
+            };
 
         }
 

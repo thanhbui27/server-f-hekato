@@ -23,7 +23,11 @@ namespace DoAn.Repositories.ProductAction
             var _productAction = _mapper.Map<ProductActions>(delete);
             _context.productActions.Remove(_productAction);
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed= true,
+                Message = "Xoá thành công"
+            };
         }
 
 
@@ -39,7 +43,11 @@ namespace DoAn.Repositories.ProductAction
 
             _context.productActions.Update(_productAction);
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>
+            {
+                IsSuccessed = true,
+                Message = "Cập nhật thành công"
+            };
         }
     }
 }

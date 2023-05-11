@@ -35,8 +35,15 @@ namespace DoAn.Controllers
             //{
             //    return NotFound();
             //}
-          
-            return Ok(await _userRepositories.GetMe());
+
+            var result = await _userRepositories.GetMe();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+
+            }
+            return BadRequest(result);
+
         }
 
         [HttpPost("lockUser")]
@@ -112,7 +119,12 @@ namespace DoAn.Controllers
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromBody]string id)
         {
-            return Ok(await _userRepositories.Delete(id));
+            var result = await _userRepositories.Delete(id);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
           
         }
     }

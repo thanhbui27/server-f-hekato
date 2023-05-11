@@ -30,53 +30,97 @@ namespace DoAn.Controllers
         [HttpGet("GetProductFeature")]
         public async Task<IActionResult> GetProductFeature()
         {
-            return Ok(await _productRepositories.GetProductFeature());
+            var result = await _productRepositories.GetProductFeature();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
 
         [HttpGet("GetProductNewArrival")]
         public async Task<IActionResult> GetProductNewArrival()
         {
-            return Ok(await _productRepositories.GetProductNewArrival());
+            var result = await _productRepositories.GetProductNewArrival();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+ 
         }
 
 
         [HttpGet("GetProductBestSeller")]
         public async Task<IActionResult> GetProductBestSeller()
         {
-            return Ok(await _productRepositories.GetProductBestSeller());
+            var result = await _productRepositories.GetProductBestSeller();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
 
         [HttpGet("GetProductSpecialOffer")]
         public async Task<IActionResult> GetProductSpecialOffer()
         {
-            return Ok(await _productRepositories.GetProductSpecialOffer());
+            var result = await _productRepositories.GetProductSpecialOffer();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+   
         }
 
         [HttpGet("GetProductTrending")]
         public async Task<IActionResult> GetProductTrending()
         {
-            return Ok(await _productRepositories.GetProductTrending());
+            var result = await _productRepositories.GetProductTrending();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
         [HttpGet("GetProductTrendSmall")]
         public async Task<IActionResult> GetProductTrendSmall()
         {
-            return Ok(await _productRepositories.GetProductTrendSmall());
+            var result = await _productRepositories.GetProductTrendSmall();
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            return Ok(await _productRepositories.GetById(id));
+            var result = await _productRepositories.GetById(id);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
         }
 
         [HttpGet("GetImageById")]
 
         public async Task<IActionResult> GetImageById(int id)
         {
-            return Ok(await _productRepositories.GetAllImageById(id));
+            var result = await _productRepositories.GetAllImageById(id);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+ 
         }
 
         [HttpPost("Create")]
@@ -84,8 +128,12 @@ namespace DoAn.Controllers
         {
             if (create != null)
             {
-                //
-                return Ok(await _productRepositories.create(create));
+                var result = await _productRepositories.create(create);
+                if (result.IsSuccessed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
             }
             return BadRequest();
         }
@@ -96,7 +144,12 @@ namespace DoAn.Controllers
         {
             if (upload != null)
             {
-                return Ok(await _productRepositories.UploadImage(upload.id, upload.files));
+                var result = await _productRepositories.UploadImage(upload.id, upload.files);
+                if (result.IsSuccessed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
             }
             return BadRequest();
         }
@@ -108,7 +161,12 @@ namespace DoAn.Controllers
         {
             if(update != null)
             {
-                return Ok(await _productRepositories.update(update));
+                var result = await _productRepositories.update(update);
+                if (result.IsSuccessed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
             }
             return BadRequest();
         }
@@ -119,7 +177,12 @@ namespace DoAn.Controllers
             if(dele != null)
             {
                 var result = await _productRepositories.delete(dele);
-                return Ok(result);
+                if (result.IsSuccessed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+              
             }
 
             return BadRequest();
@@ -132,7 +195,12 @@ namespace DoAn.Controllers
             if (rm != null)
             {
                 var result = await _productRepositories.RemoveCategory(rm);
-                return Ok(result);
+                if (result.IsSuccessed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+               
             }
 
             return BadRequest();

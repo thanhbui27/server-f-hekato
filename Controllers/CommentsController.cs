@@ -1,4 +1,5 @@
-﻿using DoAn.Repositories.Comment;
+﻿using DoAn.Models;
+using DoAn.Repositories.Comment;
 using DoAn.ViewModels.Comments;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,19 +18,36 @@ namespace DoAn.Controllers
         [HttpGet("getAllComment")]
         public async Task<IActionResult> getAllComment(int productId)
         {
-            return Ok(await _commentsRepositories.getComment(productId));
+            var result = await _commentsRepositories.getComment(productId);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> create(CreateComments create)
         {
-            return Ok(await _commentsRepositories.create(create));
+            var result = await _commentsRepositories.create(create);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> remove(int id)
         {
-            return Ok(await _commentsRepositories.delete(id));
+            var result = await _commentsRepositories.delete(id);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
 

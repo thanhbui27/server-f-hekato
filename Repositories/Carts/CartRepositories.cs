@@ -29,7 +29,10 @@ namespace DoAn.Repositories.Carts
                 _context.carts.Remove(c);
                 await _context.SaveChangesAsync();
             }
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>{
+                IsSuccessed = true,
+                Message = "Xoá giỏ hàng thành công"
+            };
         }
 
         public async Task<ApiResult<bool>> create(AddToCart cart)
@@ -43,7 +46,11 @@ namespace DoAn.Repositories.Carts
                 _context.carts.Add(Acart);
 
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed = true,
+                    Message = "Thêm giỏ hàng thành công"
+                };
             }
             else
             {
@@ -52,7 +59,11 @@ namespace DoAn.Repositories.Carts
                 _context.carts.Update(_cart);
 
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<bool>
+                {
+                    IsSuccessed = true,
+                    Message = "Thêm giỏ hàng thành công"
+                };
             }
 
         }
@@ -93,7 +104,7 @@ namespace DoAn.Repositories.Carts
             var _cart = _mapper.Map<Cart>(remove);
             _context.carts.Remove(_cart);
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>{ IsSuccessed = true, Message = "Xoá giỏ hàng thành công" };
 
         }
 
@@ -106,7 +117,7 @@ namespace DoAn.Repositories.Carts
             _context.carts.Update(_cart);
 
             await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<bool>{ IsSuccessed = true, Message = "xoá sản phẩm trong giỏ hàng thành công" };
         }
     }
 }
