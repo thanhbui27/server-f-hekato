@@ -1,6 +1,7 @@
 ﻿using DoAn.ViewModels.Users;
 using DoAn.Helpers.ApiResponse;
 using DoAn.Models;
+using DoAn.Helpers.Pagination;
 
 namespace DoAn.Repositories.Users
 {
@@ -12,5 +13,13 @@ namespace DoAn.Repositories.Users
         Task<ApiResult<UserModels>> GetMe();
 
         Task<ApiResult<bool>> Delete(string id);
+
+        Task<PagedResult<UserModels>> getAllUser(GetAllUser user);
+
+        Task<ApiResult<bool>> LockUser(string id, DateTime? endDate);
+
+        Task<ApiResult<bool>> UnLockUser(string id);
+
+        Task<ApiResult<bool>> decentralization(string id, string type);
     }
 }

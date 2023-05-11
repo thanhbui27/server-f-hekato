@@ -20,6 +20,12 @@ namespace DoAn.Controllers
    
         }
 
+        [HttpGet("getAllUser")]
+        public async Task<IActionResult> getAllUser([FromQuery]GetAllUser getAll)
+        {
+            return Ok(await _userRepositories.getAllUser(getAll));
+        }
+
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> GetMe()
@@ -32,6 +38,40 @@ namespace DoAn.Controllers
           
             return Ok(await _userRepositories.GetMe());
         }
+
+        [HttpPost("lockUser")]
+        public async Task<IActionResult> lockUser(string id, DateTime? dateTime)
+        {
+            var result = await _userRepositories.LockUser(id, dateTime);
+            if(result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("unlockUser")]
+        public async Task<IActionResult> unlockUser(string id)
+        {
+            var result = await _userRepositories.UnLockUser(id);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("decentralization")]
+        public async Task<IActionResult> decentralization(string id, string type)
+        {
+            var result = await _userRepositories.decentralization(id, type);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> login(UserLogin u)
