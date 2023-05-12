@@ -48,6 +48,7 @@ namespace DoAn.EF
         public DbSet<OrderDetails> orderDetails { get; set; }
         public DbSet<Orders> orders { get; set; }
         public DbSet<CommentsProducts> commentProducts { get; set; }
+        public DbSet<Payment> payments { get; set; }
 
     }
 }
