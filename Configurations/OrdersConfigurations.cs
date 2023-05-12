@@ -16,6 +16,8 @@ namespace DoAn.Configurations
 
             builder.HasOne(x => x.users).WithMany(x => x.orders).HasForeignKey(x => x.Uid);
 
+            builder.HasOne(x => x.payments).WithOne(x => x.orders).HasForeignKey<Payment>(x => x.orderId);
+
         }
     }
 }

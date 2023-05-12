@@ -6,7 +6,8 @@ namespace DoAn.Models
     {
         public Guid Uid { get; set; }
         public int OrderId { get; set; }
-
+        
+        public int paymentId { get; set; }
 
         public decimal total { get; set; }
 
@@ -15,6 +16,8 @@ namespace DoAn.Models
         public List<OrderDetails> OrderDetails { get; set; }
 
         public UserModels users { get; set; }
+
+        public Payment payments { get; set; }
         
     }
 }
