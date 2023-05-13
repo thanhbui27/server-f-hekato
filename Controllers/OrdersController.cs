@@ -16,6 +16,20 @@ namespace DoAn.Controllers
             _IOrderRepositories = iorderRepositories;
         }
 
+
+        [HttpGet("GetAllOrder")]
+        public async Task<IActionResult> GetAllOrder([FromQuery]GetAllOrder getall)
+        {
+            return Ok(await _IOrderRepositories.getAllOrders(getall));
+        }
+
+
+        [HttpGet("GetDetailsOrder")]
+        public async Task<IActionResult> GetDetailsOrder([FromQuery] int id)
+        {
+            return Ok(await _IOrderRepositories.getDetailtOrder(id));
+        }
+
         [HttpGet("GetOrderById")]
         public async Task<IActionResult> GetOrderById(Guid uid)
         {
@@ -39,6 +53,18 @@ namespace DoAn.Controllers
      
         }
 
+        [HttpPut("UpdateStatus")]
+
+        public async Task<IActionResult> UpdateStatusOrder(int id, string status)
+        {
+            var result = await _IOrderRepositories.updateStatusOrder(id,status);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
+        }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using DoAn.EF;
 using DoAn.Helpers.ApiResponse;
+using DoAn.Helpers.Pagination;
 using DoAn.Models;
 using DoAn.ViewModels.Orders;
 using DoAn.ViewModels.Product;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace DoAn.Repositories.Order
@@ -42,7 +44,7 @@ namespace DoAn.Repositories.Order
                 amount = Convert.ToInt32(create.total),
                 provider = create.typePay,
                 createAt = DateTime.Now,
-                status = "Đang xử lý"
+                status = "pending"
 
             };
             List<OrderDetails> lOrderDetails = new List<OrderDetails>();
@@ -71,6 +73,76 @@ namespace DoAn.Repositories.Order
 
         }
 
+        public async Task<PagedResult<Orders>> getAllOrders(GetAllOrder getall)
+        {
+            var order = await _context.orders.Select(x => new Orders
+            {
+                createAt = x.createAt,
+                OrderId = x.OrderId,
+                Uid = x.Uid,
+                payments = x.payments,
+                total = x.total,
+                users = x.users,
+                OrderDetails = x.OrderDetails.Select(od => new OrderDetails
+                {
+                    createAt= od.createAt,
+                    OrderId = od.OrderId,
+                    Id= od.Id,
+                    products = od.products,
+                    quantity = od.quantity ,
+               
+                }).Where(o => o.OrderId == x.OrderId).ToList()
+            }).ToListAsync();
+
+            if (!string.IsNullOrEmpty(getall.q))
+            {
+                order = order.Where(x => x.users.fullName.Contains(getall.q)).ToList();
+            }
+
+            int totalRow = await _context.orders.CountAsync();
+
+            order = order.Skip((getall.PageIndex - 1) * getall.PageSize)
+            .Take(getall.PageSize).ToList();
+
+            return new PagedResult<Orders>
+            {
+                TotalRecords = totalRow,
+                PageSize = getall.PageSize,
+                PageIndex = getall.PageIndex,
+                Items = order
+            };
+        }
+
+        public async Task<ApiResult<Orders>> getDetailtOrder(int id)
+        {
+            var order = _context.orders.Select(x => new Orders
+            {
+                createAt = x.createAt,
+                OrderId = x.OrderId,
+                Uid = x.Uid,
+                payments = x.payments,
+                total = x.total,
+                users = x.users,
+                OrderDetails = x.OrderDetails.Select(od => new OrderDetails
+                {
+                    createAt = od.createAt,
+                    OrderId = od.OrderId,
+                    Id = od.Id,
+                    products = od.products,
+                    quantity = od.quantity,
+
+                }).Where(o => o.OrderId == x.OrderId).ToList()
+            }).FirstOrDefault(x => x.OrderId == id);
+
+            if (order != null)
+            {
+                return new ApiSuccessResult<Orders>(order);
+            }
+
+            return new ApiErrorResult<Orders>("Đơn hàng không tồn tại");
+
+        }
+
         public async Task<ApiResult<List<Orders>>> getOrderByUser(Guid Uid)
         {
            var order = await _context.orders.Select(x => new Orders
@@ -86,6 +158,8 @@ namespace DoAn.Repositories.Order
             return new ApiSuccessResult<List<Orders>>(order);
         }
 
+
+
         public async Task<ApiResult<bool>> remove(int OrderId)
         {
             _context.orders.Remove(new Orders { OrderId = OrderId });
@@ -97,7 +171,19 @@ namespace DoAn.Repositories.Order
             };
         }
 
-    
-
+        public async Task<ApiResult<bool>> updateStatusOrder(int id, string status)
+        {
+            var payment = _context.payments.FirstOrDefault(x => x.paymentId == id);
+            if(payment == null)
+            {
+                return new ApiErrorResult<bool>("Không thể tìm thấy đơn hàng");
+            }
+            payment.status = status;
+            await _context.SaveChangesAsync();
+            return new ApiSuccessResult<bool>
+            {
+                Message = "Cập nhật trạng thái đơn hàng thành công"
+            };
+        }
     }
 }

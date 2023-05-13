@@ -49,12 +49,12 @@ namespace DoAn.Repositories.Carts
                 return new ApiSuccessResult<bool>
                 {
                     IsSuccessed = true,
-                    Message = "Thêm giỏ hàng thành công"
+                    Message = "Thêm mới sản phẩm vào giỏ hàng thành công"
                 };
             }
             else
             {
-                _cart.quantity = cart.quantity + 1;
+                _cart.quantity = _cart.quantity + 1;
 
                 _context.carts.Update(_cart);
 

@@ -156,9 +156,9 @@ namespace DoAn.Repositories.Users
 
             int totalRow = await _context.Users.CountAsync();
 
-            if (!string.IsNullOrEmpty(getAll.p))
+            if (!string.IsNullOrEmpty(getAll.q))
             {
-                user = (List<UserModels>)user.Where(x => x.fullName.Contains(getAll.p));
+                user = user.Where(x => x.fullName.Contains(getAll.q)).ToList();
             }
 
             var data = user.Skip((getAll.PageIndex - 1) * getAll.PageSize).Take(getAll.PageSize).ToList();

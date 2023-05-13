@@ -1,8 +1,8 @@
 ﻿using DoAn.Helpers.Pagination;
 
-namespace DoAn.ViewModels.Users
+namespace DoAn.ViewModels.Orders
 {
-    public class GetAllUser : PagingRequestBase
+    public class GetAllOrder : PagingRequestBase
     {
         public string? q { get; set; }
     }
