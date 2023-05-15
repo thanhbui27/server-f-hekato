@@ -86,6 +86,45 @@ namespace DoAn.Repositories.Users
             return new ApiSuccessResult<string>(tokenHandle.WriteToken(crToken));
 
         }
+
+        public string CreateToken(string email, string id, string fullName, string userName, string type)
+        {
+            var claims = new[]
+          {
+                new Claim(ClaimTypes.Email,email),
+                new Claim(ClaimTypes.NameIdentifier,id),
+                new Claim(ClaimTypes.GivenName, fullName),
+                new Claim(ClaimTypes.Name, userName),
+                new Claim(ClaimTypes.Role, type)
+            };
+
+            string issuer = _config["JWT:ValidIssuer"];
+            string signingKey = _config["JWT:Sercet"];
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Issuer = issuer,
+                Audience = issuer,
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddHours(12),
+                SigningCredentials = creds
+            };
+            //var token = new JwtSecurityToken(
+            //    issuer: issuer,
+            //    audience: issuer,
+            //    expires: DateTime.Now.AddMinutes(1),
+            //    claims: claims,
+            //    signingCredentials: creds
+            //);
+
+            var tokenHandle = new JwtSecurityTokenHandler();
+            var crToken = tokenHandle.CreateToken(tokenDescriptor);
+
+            return tokenHandle.WriteToken(crToken);
+        }
         public async Task<ApiResult<UserModels>> GetMe()
         {
             var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
@@ -125,10 +164,7 @@ namespace DoAn.Repositories.Users
             var result = await _userManager.CreateAsync(user, u.Password);
             if (result.Succeeded)
             {
-                _context.session_u.Add(new Session
-                {
-                    Uid = user.Id,
-                });
+                createSession(user.Id);
                 await _context.SaveChangesAsync();
                 return new ApiSuccessResult<bool>(true);
             }
@@ -138,9 +174,21 @@ namespace DoAn.Repositories.Users
         public async Task<ApiResult<bool>> Delete(string id)
         {
             var user = await _userManager.FindByIdAsync(id); //use async find
+            if(user == null)
+            {
+                return new ApiErrorResult<bool>("User không tồn tại");
+            }
+
             var result = await _userManager.DeleteAsync(user);
+         
             if (result.Succeeded)
             {
+                var apslogin = await _context.aspNetUserLogins.FirstOrDefaultAsync(x => x.UserId == user.Id);
+                if (apslogin != null)
+                {
+                    _context.aspNetUserLogins.Remove(apslogin);
+                    await _context.SaveChangesAsync();
+                }
                 return new ApiSuccessResult<bool>
                 {
                     IsSuccessed= true,
@@ -259,6 +307,15 @@ namespace DoAn.Repositories.Users
                 IsSuccessed = false,
                 Message = "Có lỗi xảy ra vui lòng thử lại"
             };
+        }
+
+        public async void createSession(Guid id)
+        {
+            _context.session_u.Add(new Session
+            {
+                Uid = id,
+            });
+    
         }
     }
 }

@@ -9,11 +9,15 @@ using DoAn.Repositories.Products;
 using DoAn.Repositories.StorageService;
 using DoAn.Repositories.StorageService.StorageService;
 using DoAn.Repositories.Users;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
@@ -72,13 +76,16 @@ namespace DoAn
    
             byte[] signingKeyBytes = Encoding.UTF8.GetBytes(signingKey);
 
-            builder.Services.AddAuthentication(option =>
+            builder.Services.AddAuthentication(options =>
             {
-                
-                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(option =>
+
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = FacebookDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddCookie().AddJwtBearer(option =>
             {
                 option.SaveToken = true;
                 option.RequireHttpsMetadata = false;
@@ -92,8 +99,20 @@ namespace DoAn
                     IssuerSigningKey = new SymmetricSecurityKey(signingKeyBytes),
                     ClockSkew = TimeSpan.Zero
                 };
-            });
+            }).AddGoogle(googleOptions =>
+            {
+                googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+                googleOptions.SignInScheme = IdentityConstants.ExternalScheme;
 
+            }).AddFacebook(facebookOptions => {
+                facebookOptions.AppId = "251349594049440";
+                facebookOptions.AppSecret = "7de0fe569f867fbabb9c0f97f4eb033b";
+                //facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
+                //facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+                facebookOptions.SignInScheme = IdentityConstants.ExternalScheme;
+                facebookOptions.AccessDeniedPath = "/AccessDeniedPathInfo";
+            });
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.ConfigureApplicationCookie(option =>
@@ -104,7 +123,7 @@ namespace DoAn
             });
 
             var app = builder.Build();
-
+            
             app.UseCors(builder =>
              builder.WithOrigins("*")
                .AllowAnyHeader()
@@ -129,11 +148,14 @@ namespace DoAn
                 RequestPath = new PathString("/Resources/Images")
             });
 
+
             app.UseAuthentication();
 
             app.UseAuthorization();
 
             app.MapControllers();
+
+
 
             app.Run();
         }
