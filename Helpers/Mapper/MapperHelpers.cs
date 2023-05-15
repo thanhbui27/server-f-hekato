@@ -7,6 +7,7 @@ using DoAn.ViewModels.Orders;
 using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductAction;
 using DoAn.ViewModels.ProductImage;
+using DoAn.ViewModels.Users;
 using System.Security.Cryptography.X509Certificates;
 
 namespace DoAn.Helpers.Mapper
@@ -14,6 +15,9 @@ namespace DoAn.Helpers.Mapper
     public class MapperHelpers : Profile
     {
         public MapperHelpers() {
+
+            //user
+            CreateMap<UserRegister, UserModels>().ReverseMap();
 
             //comment
             CreateMap<CommentsProducts , CreateComments>().ReverseMap();

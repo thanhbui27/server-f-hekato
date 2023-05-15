@@ -50,5 +50,6 @@ namespace DoAn.EF
         public DbSet<CommentsProducts> commentProducts { get; set; }
         public DbSet<Payment> payments { get; set; }
 
+        public DbSet<IdentityUserLogin<Guid>> aspNetUserLogins { get; set; }
     }
 }
