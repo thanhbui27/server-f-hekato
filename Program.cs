@@ -106,10 +106,10 @@ namespace DoAn
                 googleOptions.SignInScheme = IdentityConstants.ExternalScheme;
 
             }).AddFacebook(facebookOptions => {
-                facebookOptions.AppId = "251349594049440";
-                facebookOptions.AppSecret = "7de0fe569f867fbabb9c0f97f4eb033b";
-                //facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
-                //facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+                //facebookOptions.AppId = "251349594049440";
+                //facebookOptions.AppSecret = "7de0fe569f867fbabb9c0f97f4eb033b";
+                facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
+                facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
                 facebookOptions.SignInScheme = IdentityConstants.ExternalScheme;
                 facebookOptions.AccessDeniedPath = "/AccessDeniedPathInfo";
             });

@@ -57,11 +57,15 @@ namespace DoAn.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(info.Principal.FindFirstValue(ClaimTypes.Email));
-
-                var token = _userRepositories.CreateToken(user.Email, user.Id.ToString(), user.fullName, user.UserName, user.type);
-                return Redirect("http://localhost:3000/setAuth?token=" + token);
-
-
+                if(user != null)
+                {
+                    var token = _userRepositories.CreateToken(user.Email, user.Id.ToString(), user.fullName, user.UserName, user.type);
+                    return Redirect("http://localhost:3000/setAuth?token=" + token);
+                }else
+                {
+                    return Redirect("http://localhost:3000/setAuth?error=info_not_exits");
+                }
+               
             }
             if (result.IsLockedOut)
             {
