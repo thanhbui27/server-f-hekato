@@ -17,65 +17,112 @@ namespace DoAn.Repositories.Categorys
         }
         public async Task<ApiResult<bool>> Create(CategoryCreate cate)
         {
-            var cateData = _context.categories.Where(b => b.CategoryName == cate.CategoryName)
-                    .FirstOrDefault();
-            if (cateData == null)
+            try
             {
-                var category = _mapper.Map<Category>(cate);
-                 _context.categories.Add(category);
-                await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>
+                var cateData = _context.categories.Where(b => b.CategoryName == cate.CategoryName)
+                   .FirstOrDefault();
+                if (cateData == null)
                 {
-                    Message = "Thêm category thành công",
-                    IsSuccessed= true,
+                    var category = _mapper.Map<Category>(cate);
+                    _context.categories.Add(category);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        Message = "Thêm category thành công",
+                        IsSuccessed = true,
+                    };
+                }
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Không thể thêm category"
+                };
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
                 };
             }
-            return new ApiErrorResult<bool>
-            {
-                IsSuccessed= false,
-                Message = "Không thể thêm category"
-            };
+           
         }
 
         public async Task<ApiResult<List<CategoryGetAll>>> GetAll()
         {
-            var categoris = await _context.categories.ToListAsync();
+            try
+            {
+                var categoris = await _context.categories.ToListAsync();
 
-            var t = _mapper.Map<List<CategoryGetAll>>(categoris);
+                var t = _mapper.Map<List<CategoryGetAll>>(categoris);
 
-            return new ApiSuccessResult<List<CategoryGetAll>>(t);
+                return new ApiSuccessResult<List<CategoryGetAll>>(t);
+
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<List<CategoryGetAll>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<ApiResult<bool>> remove(CategoryRemove cate)
         {
-            var  category = _mapper.Map<Category>(cate);
-            _context.categories.Remove(category);
-            await _context.SaveChangesAsync();
-            return new ApiSuccessResult<bool>
-            {
-                IsSuccessed = true,
-                Message = "xoá category thành công"
-            };
-        }
-
-        public async Task<ApiResult<bool>> Update(CategoryUpdate cate)
-        {
-            var category = await _context.categories.FirstOrDefaultAsync(x => x.CategoryId == cate.CategoryId);
-            if (category != null) {
-                category.CategoryName = cate.CategoryName;
-                _context.categories.Update(category);
+            try {
+                var category = _mapper.Map<Category>(cate);
+                _context.categories.Remove(category);
                 await _context.SaveChangesAsync();
                 return new ApiSuccessResult<bool>
                 {
                     IsSuccessed = true,
-                    Message = "Cập nhật category thành công"
+                    Message = "xoá category thành công"
                 };
             }
-            return new ApiErrorResult<bool>
+            catch (Exception ex)
             {
-                IsSuccessed = false,
-                Message = "Cập nhật sản phẩm thất bại"
-            };
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+
+        }
+
+        public async Task<ApiResult<bool>> Update(CategoryUpdate cate)
+        {
+            try
+            {
+                var category = await _context.categories.FirstOrDefaultAsync(x => x.CategoryId == cate.CategoryId);
+                if (category != null)
+                {
+                    category.CategoryName = cate.CategoryName;
+                    _context.categories.Update(category);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Cập nhật category thành công"
+                    };
+                }
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Cập nhật sản phẩm thất bại"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+
         }
     }
 }

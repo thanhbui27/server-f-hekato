@@ -98,28 +98,368 @@ namespace DoAn.Repositories.Products
 
         public async Task<ApiResult<bool>> delete(ProductDelete id)
         {
-            var product = _context.products.Where(x => x.ProductId == id.ProductId).FirstOrDefault();
-            if (product != null)
+            try
             {
-                _context.products.Remove(product);
-                await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>
+
+                var product = _context.products.Where(x => x.ProductId == id.ProductId).FirstOrDefault();
+                if (product != null)
                 {
-                    IsSuccessed = true,
-                    Message = "Xoá sản phẩm thành công"
+                    _context.products.Remove(product);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Xoá sản phẩm thành công"
+                    };
+                }
+
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Sản phẩm không tồn tại"
                 };
             }
-
-            return new ApiErrorResult<bool>
+            catch (Exception ex)
             {
-                IsSuccessed = false,
-                Message = "Sản phẩm không tồn tại"
-            };
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request)
         {
-            var query = _context.products
+            try
+            {
+
+                var query = _context.products
+                    .Select(p => new GetProductByPa
+                    {
+                        ProductId = p.ProductId,
+                        ProductName = p.ProductName,
+                        List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                        {
+                            Id = pi.Id,
+                            url_image = pi.url_image,
+                            timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                        }).ToList(),
+                        productAction = p.productAction,
+                        quantity = p.quantity,
+                        PriceNew = p.PriceNew,
+                        PriceOld = p.PriceOld,
+                        ShortDetails = p.ShortDetails,
+                        ProductDescription = p.ProductDescription,
+                        dateAdd = p.dateAdd,
+                        Categories = p.GetsProductInCategories
+                            .Select(pc => pc.GetCategory)
+                            .Select(c => new CategoryGetAll
+                            {
+                                CategoryId = c.CategoryId,
+                                CategoryName = c.CategoryName
+                            }).ToList()
+                    });
+                int totalRow = await _context.products.CountAsync();
+
+                if (!string.IsNullOrEmpty(request.q))
+                    query = query.Where(x => x.ProductName.Contains(request.q));
+
+                var data = query.Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize).ToList();
+
+                var pagedResult = new PagedResult<GetProductByPa>()
+                {
+                    TotalRecords = totalRow,
+                    PageSize = request.PageSize,
+                    PageIndex = request.PageIndex,
+                    Items = data
+                };
+                return pagedResult;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<GetProductByPa>
+                {
+                    TotalRecords = 0,
+                    PageSize = request.PageSize,
+                    PageIndex = request.PageIndex,
+                    Items = new List<GetProductByPa>()
+                };
+            }
+        }
+
+
+
+        public async Task<ApiResult<bool>> update(ProductUpdate update)
+        {
+            try
+            {
+                var product = await _context.products.Include(p => p.GetsProductInCategories).ThenInclude(c => c.GetCategory).FirstOrDefaultAsync(d => d.ProductId == update.ProductId);
+
+                if (product != null)
+                {
+                    if (update.ProductName != null)
+                    {
+                        product.ProductName = update.ProductName;
+
+                    }
+                    if (update.PriceOld != null)
+                    {
+                        product.PriceOld = (decimal)update.PriceOld;
+
+                    }
+                    if (update.PriceNew != null)
+                    {
+                        product.PriceNew = (decimal)update.PriceNew;
+
+                    }
+
+                    if (update.quantity != null)
+                    {
+                        product.quantity = (int)update.quantity;
+                    }
+
+
+                    if (update.ProductDescription != null)
+                    {
+                        product.ProductDescription = update.ProductDescription;
+
+                    }
+
+                    if (update.ShortDetails != null)
+                    {
+                        product.ShortDetails = update.ShortDetails;
+
+                    }
+
+                    if (update.CategoryId.Count > 0)
+                    {
+
+                        var existingId = product.GetsProductInCategories.Select(x => x.ProductId).ToList();
+                        var SelectId = update.CategoryId.ToList();
+
+                        var toAdd = SelectId.Except(existingId).ToList();
+                        var toRemove = existingId.Except(SelectId).ToList();
+
+                        product.GetsProductInCategories = product.GetsProductInCategories.Where(x => !toRemove.Contains(x.CategoryId)).ToList();
+
+                        foreach (var item in toAdd)
+                        {
+
+                            if (product.GetsProductInCategories.Where(x => x.CategoryId == item).ToList().Count == 0)
+                            {
+                                product.GetsProductInCategories.Add(new ProductInCategory
+                                {
+                                    CategoryId = item
+                                });
+
+                            }
+                            else
+                            {
+
+                                return new ApiErrorResult<bool>
+                                {
+                                    IsSuccessed = false,
+                                    Message = "Không thể cập nhật category cho sản phẩm"
+                                };
+                            }
+
+                        }
+
+                    }
+
+                    if (update.Image_Url != null)
+                    {
+                        var path = await this.SaveFile(update.Image_Url);
+                        product.Image_Url = path;
+
+                        var productImage = await _context.ProductImage.FirstOrDefaultAsync(x => x.ProductId == product.ProductId);
+                        if (productImage != null)
+                        {
+                            productImage.url_image = path;
+                            productImage.timeAdd = DateTime.Now;
+                            _context.ProductImage.Update(productImage);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                    product.dateAdd = DateTime.Now;
+                    _context.products.Update(product);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Cập nhật sản phẩm thành công"
+                    };
+                }
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Cập nhật sản phẩm thất bại"
+                }; 
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+
+          
+        }
+
+        public async Task<ApiResult<ProductGetById>> GetById(int id)
+        {
+            try
+            {
+                if (id != null)
+                {
+                    var product = _context.products
+                     .Where(p => p.ProductId == id)
+                     .Select(p => new ProductGetById
+                     {
+                         ProductId = p.ProductId,
+                         ProductName = p.ProductName,
+                         List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                         {
+                             Id = pi.Id,
+                             url_image = pi.url_image,
+                             timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                         }).ToList(),
+                         quantity = p.quantity,
+                         PriceNew = p.PriceNew,
+                         PriceOld = p.PriceOld,
+                         ShortDetails = p.ShortDetails,
+                         ProductDescription = p.ProductDescription,
+                         dateAdd = p.dateAdd,
+                         Categories = p.GetsProductInCategories
+                             .Select(pc => pc.GetCategory)
+                             .Select(c => new CategoryGetAll
+                             {
+                                 CategoryId = c.CategoryId,
+                                 CategoryName = c.CategoryName
+                             }).ToList()
+                     })
+                     .FirstOrDefault();
+
+                    var mappterData = _mapper.Map<ProductGetById>(product);
+
+                    return new ApiSuccessResult<ProductGetById>(mappterData);
+                }
+                return new ApiErrorResult<ProductGetById>();
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<ProductGetById>
+                {
+                    IsSuccessed= false,
+                    Message=ex.Message,
+                };
+            }
+           
+        }
+        
+        public async Task<ApiResult<bool>> RemoveCategory(ProductRemoveCatgory rm)
+        {
+            try
+            {
+                if (rm != null)
+                {
+                    var produc = _mapper.Map<ProductInCategory>(rm);
+                    _context.GetsProductInCategory.Remove(produc);
+                    await _context.SaveChangesAsync();
+
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Xoá category của sản phẩm thành công"
+                    };
+
+                }
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Xoá category của sản phẩm thất bại"
+                };
+
+
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+
+
+        }
+
+        public async Task<ApiResult<List<GetProductImage>>> UploadImage(int id, List<IFormFile> files)
+        {
+            try
+            {
+                foreach (var file in files)
+                {
+                    if (file.Length > 0)
+                    {
+                        _context.ProductImage.Add(new ProductImage
+                        {
+                            ProductId = id,
+                            url_image = await this.SaveFile(file),
+                            timeAdd = DateTime.Now
+
+                        });
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                var listImage = _context.ProductImage.Where(p => p.ProductId == id).ToList();
+
+                var mapperImageList = _mapper.Map<List<GetProductImage>>(listImage);
+
+                return new ApiSuccessResult<List<GetProductImage>>(mapperImageList);
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductImage>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+           
+        }
+
+        public async Task<ApiResult<List<GetProductImage>>> GetAllImageById(int id)
+        {
+            try
+            {
+                var listImage = _context.ProductImage.Select(x => new ProductImage
+                {
+                    ProductId = x.ProductId,
+                    url_image = x.url_image,
+                    Id = id,
+                    timeAdd = x.timeAdd
+                }).Where(p => p.ProductId == id).ToList();
+
+                var mapperImageList = _mapper.Map<List<GetProductImage>>(listImage);
+
+                return new ApiSuccessResult<List<GetProductImage>>(mapperImageList);
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductImage>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+          
+        }
+
+        public async Task<ApiResult<List<GetProductByPa>>> GetProductFeature()
+        {
+            try
+            {
+                var product = await _context.products
                 .Select(p => new GetProductByPa
                 {
                     ProductId = p.ProductId,
@@ -144,301 +484,71 @@ namespace DoAn.Repositories.Products
                             CategoryId = c.CategoryId,
                             CategoryName = c.CategoryName
                         }).ToList()
-                });
-            int totalRow = await _context.products.CountAsync();
+                }).Where(x => x.productAction.Featured == true)
+                .ToListAsync();
 
-            if (!string.IsNullOrEmpty(request.q))
-                query = query.Where(x => x.ProductName.Contains(request.q));
-
-            var data = query.Skip((request.PageIndex - 1) * request.PageSize)
-            .Take(request.PageSize).ToList();
-
-            var pagedResult = new PagedResult<GetProductByPa>()
+                return new ApiSuccessResult<List<GetProductByPa>>(product);
+            }catch(Exception ex)
             {
-                TotalRecords = totalRow,
-                PageSize = request.PageSize,
-                PageIndex = request.PageIndex,
-                Items = data
-            };
-            return pagedResult;
-        }
-
-
-
-        public async Task<ApiResult<bool>> update(ProductUpdate update)
-        {
-
-            var product = await _context.products.Include(p => p.GetsProductInCategories).ThenInclude(c => c.GetCategory).FirstOrDefaultAsync(d => d.ProductId == update.ProductId);
-
-            if (product != null)
-            {
-                if (update.ProductName != null)
+                return new ApiErrorResult<List<GetProductByPa>>
                 {
-                    product.ProductName = update.ProductName;
-
-                }
-                if (update.PriceOld != null)
-                {
-                    product.PriceOld = (decimal)update.PriceOld;
-
-                }
-                if (update.PriceNew != null)
-                {
-                    product.PriceNew = (decimal)update.PriceNew;
-
-                }
-
-                if(update.quantity != null)
-                {
-                    product.quantity = (int)update.quantity;
-                }
-
-
-                if (update.ProductDescription != null)
-                {
-                    product.ProductDescription = update.ProductDescription;
-
-                }
-
-                if (update.ShortDetails != null)
-                {
-                    product.ShortDetails = update.ShortDetails;
-
-                }
-                            
-                if(update.CategoryId.Count > 0)
-                {
-                    
-                    var existingId = product.GetsProductInCategories.Select(x => x.ProductId).ToList();
-                    var SelectId = update.CategoryId.ToList();
-
-                    var toAdd = SelectId.Except(existingId).ToList();
-                    var toRemove = existingId.Except(SelectId).ToList();
-
-                    product.GetsProductInCategories = product.GetsProductInCategories.Where(x => !toRemove.Contains(x.CategoryId)).ToList();
-                    
-                    foreach (var item in toAdd)
-                    {
-                       
-                        if(product.GetsProductInCategories.Where(x => x.CategoryId == item).ToList().Count == 0 ) 
-                        {
-                            product.GetsProductInCategories.Add(new ProductInCategory
-                            {
-                                CategoryId = item
-                            });
-                           
-                        }else
-                        {
-                  
-                            return new ApiErrorResult<bool>
-                            {
-                                IsSuccessed= false,
-                                Message = "Không thể cập nhật category cho sản phẩm"
-                            };
-                        }
-                      
-                    }
-
-                }
-
-                if (update.Image_Url != null)
-                {
-                    var path = await this.SaveFile(update.Image_Url);
-                    product.Image_Url = path;
-
-                    var productImage = await _context.ProductImage.FirstOrDefaultAsync(x => x.ProductId == product.ProductId);
-                    if (productImage != null)
-                    {
-                        productImage.url_image = path;
-                        productImage.timeAdd = DateTime.Now;
-                        _context.ProductImage.Update(productImage);
-                        await _context.SaveChangesAsync();
-                    }
-                }
-                product.dateAdd = DateTime.Now;
-                _context.products.Update(product);
-                await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>
-                {
-                    IsSuccessed= true,
-                    Message = "Cập nhật sản phẩm thành công"
+                    IsSuccessed = false,
+                    Message = ex.Message
                 };
             }
-            return new ApiErrorResult<bool>
-            {
-                IsSuccessed = false,
-                Message = "Cập nhật sản phẩm thất bại"
-            }; ;
-        }
-
-        public async Task<ApiResult<ProductGetById>> GetById(int id)
-        {
-            if (id != null)
-            {
-                var product = _context.products
-                 .Where(p => p.ProductId == id)
-                 .Select(p => new ProductGetById
-                 {
-                     ProductId = p.ProductId,
-                     ProductName= p.ProductName,
-                     List_image = p.GetsProductImage.Select(pi => new GetProductImage
-                     {
-                         Id = pi.Id,
-                         url_image = pi.url_image,
-                         timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
-                     }).ToList(),
-                     quantity = p.quantity,
-                     PriceNew = p.PriceNew,
-                     PriceOld = p.PriceOld,
-                     ShortDetails = p.ShortDetails,
-                     ProductDescription = p.ProductDescription,
-                     dateAdd = p.dateAdd,
-                     Categories = p.GetsProductInCategories
-                         .Select(pc => pc.GetCategory)
-                         .Select(c => new CategoryGetAll
-                         {
-                             CategoryId=c.CategoryId,
-                             CategoryName = c.CategoryName
-                         }).ToList()
-                 })
-                 .FirstOrDefault();
-
-                var mappterData = _mapper.Map<ProductGetById>(product);
-
-                return new ApiSuccessResult<ProductGetById>(mappterData);
-            }
-            return new ApiErrorResult<ProductGetById>();
-        }
-        
-        public async Task<ApiResult<bool>> RemoveCategory(ProductRemoveCatgory rm)
-        {
-            if (rm != null)
-            {
-                var produc = _mapper.Map<ProductInCategory>(rm);
-                _context.GetsProductInCategory.Remove(produc);
-                await _context.SaveChangesAsync();
-
-                return new ApiSuccessResult<bool>
-                {
-                    IsSuccessed = true,
-                    Message = "Xoá category của sản phẩm thành công"
-                };
-
-            }
-            return new ApiErrorResult<bool>
-            {
-                IsSuccessed = false,
-                Message = "Xoá category của sản phẩm thất bại"
-            };
-
-        }
-
-        public async Task<ApiResult<List<GetProductImage>>> UploadImage(int id, List<IFormFile> files)
-        {
-            foreach (var file in files)
-            {
-                if (file.Length > 0)
-                {
-                    _context.ProductImage.Add(new ProductImage
-                    {
-                        ProductId = id,
-                        url_image = await this.SaveFile(file),
-                        timeAdd = DateTime.Now
-
-                    });
-                    await _context.SaveChangesAsync();
-                }
-            }
-            var listImage = _context.ProductImage.Where(p => p.ProductId== id).ToList();
-
-            var mapperImageList = _mapper.Map<List<GetProductImage>>(listImage);
-
-            return new  ApiSuccessResult<List<GetProductImage>>(mapperImageList);
-        }
-
-        public async Task<ApiResult<List<GetProductImage>>> GetAllImageById(int id)
-        {
-            var listImage = _context.ProductImage.Select(x => new ProductImage
-            {
-                ProductId = x.ProductId,
-                url_image = x.url_image,
-                Id = id,
-                timeAdd = x.timeAdd
-            }).Where(p => p.ProductId == id).ToList();
-
-            var mapperImageList = _mapper.Map<List<GetProductImage>>(listImage);
-
-            return new ApiSuccessResult<List<GetProductImage>>(mapperImageList);
-        }
-
-        public async Task<ApiResult<List<GetProductByPa>>> GetProductFeature()
-        {
-            var product = await _context.products
-                  .Select(p => new GetProductByPa
-                  {
-                      ProductId = p.ProductId,
-                      ProductName = p.ProductName,
-                      List_image = p.GetsProductImage.Select(pi => new GetProductImage
-                      {
-                          Id = pi.Id,
-                          url_image = pi.url_image,
-                          timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
-                      }).ToList(),
-                      productAction = p.productAction,
-                      quantity = p.quantity,
-                      PriceNew = p.PriceNew,
-                      PriceOld = p.PriceOld,
-                      ShortDetails = p.ShortDetails,
-                      ProductDescription = p.ProductDescription,
-                      dateAdd = p.dateAdd,
-                      Categories = p.GetsProductInCategories
-                          .Select(pc => pc.GetCategory)
-                          .Select(c => new CategoryGetAll
-                          {
-                              CategoryId = c.CategoryId,
-                              CategoryName = c.CategoryName
-                          }).ToList()
-                  }).Where(x => x.productAction.Featured == true)
-                  .ToListAsync();
-
-            return new ApiSuccessResult<List<GetProductByPa>>(product);
+          
         }
 
         public async Task<ApiResult<List<GetProductByPa>>> GetProductBestSeller()
         {
-            var product = await _context.products
-                  .Select(p => new GetProductByPa
-                  {
-                      ProductId = p.ProductId,
-                      ProductName = p.ProductName,
-                      List_image = p.GetsProductImage.Select(pi => new GetProductImage
-                      {
-                          Id = pi.Id,
-                          url_image = pi.url_image,
-                          timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
-                      }).ToList(),
-                      productAction = p.productAction,
-                      quantity = p.quantity,
-                      PriceNew = p.PriceNew,
-                      PriceOld = p.PriceOld,
-                      ShortDetails = p.ShortDetails,
-                      ProductDescription = p.ProductDescription,
-                      dateAdd = p.dateAdd,
-                      Categories = p.GetsProductInCategories
-                          .Select(pc => pc.GetCategory)
-                          .Select(c => new CategoryGetAll
-                          {
-                              CategoryId = c.CategoryId,
-                              CategoryName = c.CategoryName
-                          }).ToList()
-                  }).Where(x => x.productAction.BestSeller == true)
-                  .ToListAsync();
+            try
+            {
+                var product = await _context.products
+                                .Select(p => new GetProductByPa
+                                {
+                                    ProductId = p.ProductId,
+                                    ProductName = p.ProductName,
+                                    List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                                    {
+                                        Id = pi.Id,
+                                        url_image = pi.url_image,
+                                        timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                                    }).ToList(),
+                                    productAction = p.productAction,
+                                    quantity = p.quantity,
+                                    PriceNew = p.PriceNew,
+                                    PriceOld = p.PriceOld,
+                                    ShortDetails = p.ShortDetails,
+                                    ProductDescription = p.ProductDescription,
+                                    dateAdd = p.dateAdd,
+                                    Categories = p.GetsProductInCategories
+                                        .Select(pc => pc.GetCategory)
+                                        .Select(c => new CategoryGetAll
+                                        {
+                                            CategoryId = c.CategoryId,
+                                            CategoryName = c.CategoryName
+                                        }).ToList()
+                                }).Where(x => x.productAction.BestSeller == true)
+                                .ToListAsync();
 
-            return new ApiSuccessResult<List<GetProductByPa>>(product);
+                return new ApiSuccessResult<List<GetProductByPa>>(product);
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductByPa>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+
         }
 
         public async Task<ApiResult<List<GetProductByPa>>> GetProductSpecialOffer()
         {
+            try
+            {
+
             var product = await _context.products
                   .Select(p => new GetProductByPa
                   {
@@ -468,10 +578,22 @@ namespace DoAn.Repositories.Products
                   .ToListAsync();
 
             return new ApiSuccessResult<List<GetProductByPa>>(product);
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductByPa>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<ApiResult<List<GetProductByPa>>> GetProductNewArrival()
         {
+            try
+            {
+
             var product = await _context.products
                  .Select(p => new GetProductByPa
                  {
@@ -501,10 +623,22 @@ namespace DoAn.Repositories.Products
                  .ToListAsync();
 
             return new ApiSuccessResult<List<GetProductByPa>>(product);
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductByPa>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<ApiResult<List<GetProductByPa>>> GetProductTrending()
         {
+            try
+            {
+
             var product = await _context.products
                 .Select(p => new GetProductByPa
                 {
@@ -534,10 +668,22 @@ namespace DoAn.Repositories.Products
                 .ToListAsync();
 
             return new ApiSuccessResult<List<GetProductByPa>>(product);
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductByPa>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<ApiResult<List<GetProductByPa>>> GetProductTrendSmall()
         {
+            try
+            {
+
             var product = await _context.products
                 .Select(p => new GetProductByPa
                 {
@@ -567,6 +713,15 @@ namespace DoAn.Repositories.Products
                 .ToListAsync();
 
             return new ApiSuccessResult<List<GetProductByPa>>(product);
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<List<GetProductByPa>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
         }
     }
 }

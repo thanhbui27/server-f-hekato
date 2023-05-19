@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO.Compression;
@@ -43,6 +44,9 @@ namespace DoAn.Repositories.Users
         }
         public async Task<ApiResult<string>> Login(UserLogin user)
         {
+            try
+            {
+
             var u = await _userManager.FindByNameAsync(user.userName);
             if(u == null)
             {
@@ -90,7 +94,15 @@ namespace DoAn.Repositories.Users
             var crToken = tokenHandle.CreateToken(tokenDescriptor);
 
 
-            return new ApiSuccessResult<string>(tokenHandle.WriteToken(crToken));
+             return new ApiSuccessResult<string>(tokenHandle.WriteToken(crToken));
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<string>
+                {
+                    Message= ex.Message,
+                    IsSuccessed= false,
+                };
+            }
 
         }
 
@@ -134,97 +146,137 @@ namespace DoAn.Repositories.Users
         }
         public async Task<ApiResult<UserModels>> GetMe()
         {
-            var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
-            user.session = _context.session_u.Select(s => new Session
+            try
             {
-                SessionId = s.SessionId,
-                Uid = s.Uid
-            }).Where(u => u.Uid == user.Id).FirstOrDefault();
-            
-            return new ApiSuccessResult<UserModels>(user);
+                var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+                user.session = _context.session_u.Select(s => new Session
+                {
+                    SessionId = s.SessionId,
+                    Uid = s.Uid
+                }).Where(u => u.Uid == user.Id).FirstOrDefault();
+
+                return new ApiSuccessResult<UserModels>(user);
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<UserModels>
+                {
+                    IsSuccessed= false,
+                    Message = ex.Message,
+                };
+            }
+          
         }
 
         public async Task<ApiResult<bool>> Register(UserRegister u)
         {
-            var user = await _userManager.FindByNameAsync(u.userName);
-            if (user != null)
+            try
             {
-                return new ApiErrorResult<bool>("Tài khoản đã tồn tại");
-            }
-            if (await _userManager.FindByEmailAsync(u.Email) != null)
-            {
-                return new ApiErrorResult<bool>("Emai đã tồn tại");
-            }
+                var user = await _userManager.FindByNameAsync(u.userName);
+                if (user != null)
+                {
+                    return new ApiErrorResult<bool>("Tài khoản đã tồn tại");
+                }
+                if (await _userManager.FindByEmailAsync(u.Email) != null)
+                {
+                    return new ApiErrorResult<bool>("Emai đã tồn tại");
+                }
 
-            user = new UserModels()
-            {
-                Email = u.Email,
-                fullName = u.fullName,
-                PhoneNumber = u.PhoneNumber,
-                UserName = u.userName,
-                dob = DateTime.UtcNow.Date,
-                type = "user"           
-            };
+                user = new UserModels()
+                {
+                    Email = u.Email,
+                    fullName = u.fullName,
+                    PhoneNumber = u.PhoneNumber,
+                    UserName = u.userName,
+                    dob = DateTime.UtcNow.Date,
+                    type = "user"
+                };
 
-   
 
-            var result = await _userManager.CreateAsync(user, u.Password);
-            if (result.Succeeded)
+
+                var result = await _userManager.CreateAsync(user, u.Password);
+                if (result.Succeeded)
+                {
+                    createSession(user.Id);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>(true);
+                }
+                return new ApiErrorResult<bool>("Đăng ký không thành công");
+            }catch(Exception ex)
             {
-                createSession(user.Id);
-                await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>(true);
+                return new ApiErrorResult<bool>(ex.Message);
             }
-            return new ApiErrorResult<bool>("Đăng ký không thành công");
+          
         }
 
         public async Task<ApiResult<bool>> Delete(string id)
         {
-            var user = await _userManager.FindByIdAsync(id); //use async find
-            if(user == null)
+            try
             {
-                return new ApiErrorResult<bool>("User không tồn tại");
-            }
 
-            var result = await _userManager.DeleteAsync(user);
-         
-            if (result.Succeeded)
-            {
-                var apslogin = await _context.aspNetUserLogins.FirstOrDefaultAsync(x => x.UserId == user.Id);
-                if (apslogin != null)
+                var user = await _userManager.FindByIdAsync(id); //use async find
+                if(user == null)
                 {
-                    _context.aspNetUserLogins.Remove(apslogin);
-                    await _context.SaveChangesAsync();
+                    return new ApiErrorResult<bool>("User không tồn tại");
                 }
-                return new ApiSuccessResult<bool>
+
+                var result = await _userManager.DeleteAsync(user);
+         
+                if (result.Succeeded)
                 {
-                    IsSuccessed= true,
-                    Message = "Xoá user thành công"
-                };
+                    var apslogin = await _context.aspNetUserLogins.FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    if (apslogin != null)
+                    {
+                        _context.aspNetUserLogins.Remove(apslogin);
+                        await _context.SaveChangesAsync();
+                    }
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed= true,
+                        Message = "Xoá user thành công"
+                    };
+                }
+                return new ApiErrorResult<bool>("Xoá user không thành công");
             }
-            return new ApiErrorResult<bool>("Xoá user không thành công");
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<bool>(ex.Message);
+            }
         }
 
         public async Task<PagedResult<UserModels>> getAllUser(GetAllUser getAll)
         {
-            var user = _context.Users.ToList();
-
-            int totalRow = await _context.Users.CountAsync();
-
-            if (!string.IsNullOrEmpty(getAll.q))
+            try
             {
-                user = user.Where(x => x.fullName.Contains(getAll.q)).ToList();
+
+                var user = _context.Users.ToList();
+
+                int totalRow = await _context.Users.CountAsync();
+
+                if (!string.IsNullOrEmpty(getAll.q))
+                {
+                    user = user.Where(x => x.fullName.Contains(getAll.q)).ToList();
+                }
+
+                var data = user.Skip((getAll.PageIndex - 1) * getAll.PageSize).Take(getAll.PageSize).ToList();
+
+                return new PagedResult<UserModels>
+                {
+                    Items = data,
+                    PageSize = getAll.PageSize,
+                    PageIndex = getAll.PageIndex,
+                    TotalRecords = totalRow
+                };
             }
-
-            var data = user.Skip((getAll.PageIndex - 1) * getAll.PageSize).Take(getAll.PageSize).ToList();
-
-            return new PagedResult<UserModels>
+            catch (Exception ex)
             {
-                Items = data,
-                PageSize = getAll.PageSize,
-                PageIndex = getAll.PageIndex,
-                TotalRecords = totalRow
-            };
+                return new PagedResult<UserModels>
+                {
+                    Items = new List<UserModels>(),
+                    PageSize = getAll.PageSize,
+                    PageIndex = getAll.PageIndex,
+                    TotalRecords = 0
+                };
+            }
 
         }
 
@@ -244,7 +296,13 @@ namespace DoAn.Repositories.Users
                         Message = "Khoá user thành công"
                     };
                 }
-            }catch(Exception ex)
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Có lỗi xảy ra vui lòng thử lại"
+                };
+            }
+            catch(Exception ex)
             {
                 return new ApiErrorResult<bool>
                 {
@@ -253,67 +311,89 @@ namespace DoAn.Repositories.Users
                 };
 
             }
-            return new ApiErrorResult<bool>
-            {
-                IsSuccessed = false,
-                Message = "Có lỗi xảy ra vui lòng thử lại"
-            };
+           
 
 
         }
 
         public async Task<ApiResult<bool>> UnLockUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-
-            if (user != null)
+            try
             {
-                user.LockoutEnd = DateTime.Now;
-                await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>
+                var user = await _userManager.FindByIdAsync(id);
+
+                if (user != null)
                 {
-                    IsSuccessed = true,
-                    Message = "Mở khoá user thành công"
+                    user.LockoutEnd = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Mở khoá user thành công"
+                    };
+                }
+
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Có lỗi xảy ra vui lòng thử lại"
                 };
             }
-
-            return new ApiErrorResult<bool>
+            catch (Exception ex)
             {
-                IsSuccessed = false,
-                Message = "Có lỗi xảy ra vui lòng thử lại"
-            };
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message.ToString()
+                };
+
+            }
+
 
         }
 
         public async Task<ApiResult<bool>> decentralization(string id, string type)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
+            try
             {
-                if(type == "admin" || type == "user")
+
+                var user = await _userManager.FindByIdAsync(id);
+                if (user != null)
                 {
-                    user.type = type;
-                    await _context.SaveChangesAsync();
-                    return new ApiSuccessResult<bool>
+                    if(type == "admin" || type == "user")
                     {
-                        IsSuccessed = true,
-                        Message = "Phân quyền thành công"
-                    };
-                }else
-                {
-                    return new ApiErrorResult<bool>
+                        user.type = type;
+                        await _context.SaveChangesAsync();
+                        return new ApiSuccessResult<bool>
+                        {
+                            IsSuccessed = true,
+                            Message = "Phân quyền thành công"
+                        };
+                    }else
                     {
-                        IsSuccessed = false,
-                        Message = "Loại quyền không đúng định dạng"
-                    };
-                }
+                        return new ApiErrorResult<bool>
+                        {
+                            IsSuccessed = false,
+                            Message = "Loại quyền không đúng định dạng"
+                        };
+                    }
              
+                }
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "Có lỗi xảy ra vui lòng thử lại"
+                };
             }
-            return new ApiErrorResult<bool>
+            catch (Exception ex)
             {
-                IsSuccessed = false,
-                Message = "Có lỗi xảy ra vui lòng thử lại"
-            };
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message.ToString()
+                };
+
+            }
         }
 
         public async void createSession(Guid id)
