@@ -4,14 +4,18 @@ using DoAn.Helpers.ApiResponse;
 using DoAn.Helpers.Pagination;
 using DoAn.Migrations;
 using DoAn.Models;
+using DoAn.Repositories.StorageService.StorageService;
 using DoAn.ViewModels.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO.Compression;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 
@@ -25,7 +29,9 @@ namespace DoAn.Repositories.Users
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMapper _mapper;
         private readonly EFDbContext _context;
-        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration config, IHttpContextAccessor httpContextAccessor, IMapper mapper, EFDbContext dbContext)
+        private readonly IStorageService _storageService;
+        private const string USER_CONTENT_FOLDER_NAME = "Images";
+        public UserRepositories(UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IStorageService storageService, IConfiguration config, IHttpContextAccessor httpContextAccessor, IMapper mapper, EFDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -33,6 +39,7 @@ namespace DoAn.Repositories.Users
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
             _context = dbContext;
+            _storageService= storageService;
         }
         public async Task<ApiResult<string>> Login(UserLogin user)
         {
@@ -316,6 +323,76 @@ namespace DoAn.Repositories.Users
                 Uid = id,
             });
     
+        }
+
+        private async Task<string> SaveFile(IFormFile file)
+        {
+            var originalFileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim();
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(originalFileName)}";
+            await _storageService.SaveFileAsync(file.OpenReadStream(), fileName);
+            return "/" + USER_CONTENT_FOLDER_NAME + "/" + fileName;
+        }
+
+        public async Task<ApiResult<string>> uploadImageUser(string id, IFormFile imgae)
+        {
+            try
+            {
+                if(imgae.Length > 5 * 1024 * 1024)
+                {
+                    return new ApiErrorResult<string>
+                    {
+                        IsSuccessed = false,
+                        Message = "Dung lượng hình ảnh quá lớn"
+                    };
+                }
+                if (imgae != null && !imgae.ContentType.StartsWith("image/"))
+                {
+                    return new ApiErrorResult<string>
+                    {
+                        IsSuccessed = false,
+                        Message = "Vui lòng chỉ upload file hình ảnh"
+                    };
+                }
+                var user = await _userManager.FindByIdAsync(id);
+                var getImage = await this.SaveFile(imgae);
+                if(getImage != null)
+                {
+                    string fileName = Path.GetFileName(user.picture); // "9590b704-167a-4daf-a2d6-041462b738f9.jpg"
+                    string directoryPath = Path.GetDirectoryName(user.picture);// "/Images"
+
+                    if (directoryPath.Contains("Images"))
+                    {
+                        await _storageService.DeleteFileAsync(fileName);
+                    }
+        
+                    user.picture = getImage;
+                    await _userManager.UpdateAsync(user);
+                    await _context.SaveChangesAsync();
+                    
+                    return new ApiSuccessResult<string>(user.picture)
+                    {
+                        IsSuccessed = true,
+                        Message = "Upload hình ảnh thành công"
+
+                    };
+                }
+
+                return new ApiErrorResult<string>
+                {
+                    IsSuccessed = false,
+                    Message = "Không thể đăng tải hình ảnh"
+                };
+
+
+            }
+            catch(Exception ex)
+            {
+                return new ApiErrorResult<string>
+                {
+                    IsSuccessed = false,
+                    Message = "Không thể đăng tải hình ảnh"
+                };
+            }
         }
     }
 }

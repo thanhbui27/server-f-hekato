@@ -12,6 +12,7 @@ namespace DoAn.Models
 
         public string? address { get; set; }
 
+        public string? picture { get; set; }
         public string? CMND { get; set; } 
         public Session session { get; set; }
 

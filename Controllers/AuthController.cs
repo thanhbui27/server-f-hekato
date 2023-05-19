@@ -1,20 +1,14 @@
-﻿using DoAn.Helpers.ApiResponse;
-using DoAn.Models;
+﻿using DoAn.Models;
 using DoAn.Repositories.Users;
 using DoAn.ViewModels.Users;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using Newtonsoft.Json.Linq;
-using Microsoft.EntityFrameworkCore;
+
 using Microsoft.AspNetCore.Authentication.Facebook;
+using System;
 
 namespace DoAn.Controllers
 {
@@ -58,10 +52,11 @@ namespace DoAn.Controllers
             {
                 var user = await _userManager.FindByEmailAsync(info.Principal.FindFirstValue(ClaimTypes.Email));
                 if(user != null)
-                {
+                {   
                     var token = _userRepositories.CreateToken(user.Email, user.Id.ToString(), user.fullName, user.UserName, user.type);
                     return Redirect("http://localhost:3000/setAuth?token=" + token);
-                }else
+                }
+                else
                 {
                     return Redirect("http://localhost:3000/setAuth?error=info_not_exits");
                 }
@@ -73,10 +68,12 @@ namespace DoAn.Controllers
             }
             else
             {
+                
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
                 var firstName = info.Principal.FindFirst(ClaimTypes.GivenName)?.Value;
                 var lastName = info.Principal.FindFirst(ClaimTypes.Surname)?.Value;
-                if(string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
+                var picture = info.Principal.FindFirstValue("picture");
+                if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
                 {
                     return Redirect("http://localhost:3000/setAuth?error=info_not_exits");
                 }
@@ -86,12 +83,18 @@ namespace DoAn.Controllers
                     int randomMilliseconds = random.Next(1000000);
                     email = "detault_account_"+ randomMilliseconds+"@gmail.com";
                 }
+              
+                if (picture == null)
+                {
+                    picture = "";
+                }
                 var user = new UserModels
                 {
                     fullName = firstName + " " + lastName,
                     UserName = email,
                     Email = email,
                     type = "user",
+                    picture = picture
                 };
                 var createResult = await _userManager.CreateAsync(user);
                 if (createResult.Succeeded)
@@ -149,6 +152,16 @@ namespace DoAn.Controllers
             }
             return BadRequest(result);
 
+        }
+        [HttpPost("uploadAvatar")]
+        public async Task<IActionResult> uploadImageUser(string id , [FromForm] IFormFile image)
+        {
+            var result = await _userRepositories.uploadImageUser(id, image);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
         [HttpPost("lockUser")]
