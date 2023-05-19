@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
+using System.Security.Claims;
 using System.Text;
 
 namespace DoAn
@@ -104,6 +106,15 @@ namespace DoAn
                 googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
                 googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
                 googleOptions.SignInScheme = IdentityConstants.ExternalScheme;
+                googleOptions.Scope.Add("profile");
+                googleOptions.Events.OnCreatingTicket = (context) =>
+                {
+                    var picture = context.User.GetProperty("picture").GetString();
+
+                    context.Identity.AddClaim(new Claim("picture", picture));
+
+                    return Task.CompletedTask;
+                };
 
             }).AddFacebook(facebookOptions => {
                 //facebookOptions.AppId = "251349594049440";
@@ -112,6 +123,13 @@ namespace DoAn
                 facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
                 facebookOptions.SignInScheme = IdentityConstants.ExternalScheme;
                 facebookOptions.AccessDeniedPath = "/AccessDeniedPathInfo";
+                facebookOptions.Events.OnCreatingTicket = (context) =>
+                {
+                    var picture = $"https://graph.facebook.com/{context.Principal.FindFirstValue(ClaimTypes.NameIdentifier)}/picture?type=large";
+                    context.Identity.AddClaim(new Claim("picture", picture));
+                    return Task.CompletedTask;
+                };
+
             });
             builder.Services.AddHttpContextAccessor();
 

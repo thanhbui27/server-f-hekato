@@ -22,6 +22,8 @@ namespace DoAn.Repositories.Users
 
         Task<ApiResult<bool>> decentralization(string id, string type);
 
+        Task<ApiResult<string>> uploadImageUser(string id, IFormFile imgae);
+
         void createSession(Guid id);
 
         string CreateToken(string email, string id, string fullName, string userName, string type);
