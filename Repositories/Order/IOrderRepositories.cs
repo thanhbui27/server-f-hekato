@@ -7,7 +7,7 @@ namespace DoAn.Repositories.Order
 {
     public interface IOrderRepositories
     {
-        Task<ApiResult<bool>> create(CreateOrders create);
+        Task<ApiResult<int>> create(CreateOrders create);
 
         Task<ApiResult<List<Orders>>> getOrderByUser(Guid Uid);
         Task<PagedResult<Orders>> getAllOrders(GetAllOrder getall);
@@ -16,6 +16,6 @@ namespace DoAn.Repositories.Order
         Task<ApiResult<bool>> remove(int OrderId);
 
         Task<ApiResult<Orders>> getDetailtOrder(int id);
-
+        Task<ApiResult<bool>> updateTransCode(int id, string transcode);
     }
 }

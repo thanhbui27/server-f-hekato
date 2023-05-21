@@ -9,6 +9,7 @@ using DoAn.Repositories.Products;
 using DoAn.Repositories.StorageService;
 using DoAn.Repositories.StorageService.StorageService;
 using DoAn.Repositories.Users;
+using DoAn.Repositories.VNPAY;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -71,6 +72,7 @@ namespace DoAn
             builder.Services.AddTransient<ICartRepositories, CartRepositories>();
             builder.Services.AddTransient<IOrderRepositories, OrderRepositories>();
             builder.Services.AddTransient<ICommentsRepositories, CommentsRepositories>();
+            builder.Services.AddTransient<IVnpayRepositories, VnpayRepositories>();
             builder.Services.AddAutoMapper(typeof(Program));
 
             string issuer = builder.Configuration["JWT:ValidIssuer"];

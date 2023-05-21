@@ -474,5 +474,45 @@ namespace DoAn.Repositories.Users
                 };
             }
         }
+
+        public async Task<ApiResult<bool>> updateInfoUser(UpdateUser u)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(u.uid);
+                if(user != null)
+                {
+                    user.fullName = u.fullName;
+                    user.address = u.address;
+                    user.dob = u.dob;
+                    user.CMND = u.cmnd;
+                    user.PhoneNumber = u.phoneNumber;
+                    u.email = u.email;
+                    await _userManager.UpdateAsync(user);
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Cập nhật User thành công"
+
+                    };
+                }
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = "User không tồn tại"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+
+
+
+        }
     }
 }

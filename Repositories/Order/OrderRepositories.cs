@@ -19,14 +19,14 @@ namespace DoAn.Repositories.Order
             _context = context;
             _mapper = mapper;
         }
-        public async Task<ApiResult<bool>> create(CreateOrders create)
+        public async Task<ApiResult<int>> create(CreateOrders create)
         {
             try
             {
 
                 if(create.users.id == Guid.Empty || string.IsNullOrEmpty(create.users.address) || string.IsNullOrEmpty(create.users.Email) || string.IsNullOrEmpty(create.users.fullName) || string.IsNullOrEmpty(create.users.PhoneNumber))
                 {
-                    return new ApiErrorResult<bool>("Khổng thể để trống các trường thông tin");
+                    return new ApiErrorResult<int>("Khổng thể để trống các trường thông tin");
                 }else
                 {
                 var user = await _context.Users.FindAsync(create.users.id);
@@ -68,15 +68,16 @@ namespace DoAn.Repositories.Order
                 _context.orders.Add(orders);
 
                 await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>
+                return new ApiSuccessResult<int>
                 {
                     IsSuccessed = true,
-                    Message = "Đơn hàng đang được xử lý vui lòng đợi"
+                    Message = "Đơn hàng đang được xử lý vui lòng đợi",
+                    Data = orders.payments.paymentId
                 };
             }
             catch (Exception ex)
             {
-                return new ApiErrorResult<bool>
+                return new ApiErrorResult<int>
                 {
                     IsSuccessed = false,
                     Message = ex.Message
@@ -188,7 +189,7 @@ namespace DoAn.Repositories.Order
                 {
                     createAt = x.createAt,
                     OrderId = x.OrderId,
-                    Uid = Uid,
+                    Uid = x.Uid,
                     payments = x.payments,
                     total = x.total,
                     OrderDetails = x.OrderDetails.Where(o => o.OrderId == x.OrderId).ToList()
@@ -248,6 +249,32 @@ namespace DoAn.Repositories.Order
                     Message = "Cập nhật trạng thái đơn hàng thành công"
                 };
             } catch (Exception ex)
+            {
+                return new ApiErrorResult<bool>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<ApiResult<bool>> updateTransCode(int id, string transCode)
+        {
+            try
+            {
+                var payment = _context.payments.FirstOrDefault(x => x.paymentId == id);
+                if (payment == null)
+                {
+                    return new ApiErrorResult<bool>("Không thể tìm thấy đơn hàng");
+                }
+                payment.transactionCode = transCode;
+                await _context.SaveChangesAsync();
+                return new ApiSuccessResult<bool>
+                {
+                    Message = "Cập nhật trạng thái đơn hàng thành công"
+                };
+            }
+            catch (Exception ex)
             {
                 return new ApiErrorResult<bool>
                 {

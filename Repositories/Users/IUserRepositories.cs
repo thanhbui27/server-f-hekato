@@ -24,6 +24,8 @@ namespace DoAn.Repositories.Users
 
         Task<ApiResult<string>> uploadImageUser(string id, IFormFile imgae);
 
+        Task<ApiResult<bool>> updateInfoUser(UpdateUser u);
+
         void createSession(Guid id);
 
         string CreateToken(string email, string id, string fullName, string userName, string type);
