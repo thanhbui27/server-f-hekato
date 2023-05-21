@@ -20,13 +20,13 @@ namespace DoAn.Controllers
         public readonly IUserRepositories _userRepositories;
         public readonly UserManager<UserModels> _userManager;
         private readonly SignInManager<UserModels> _signInManager;
-
-        public AuthController(IUserRepositories userRepositories, UserManager<UserModels> userManager, SignInManager<UserModels> signInManager)
+        private readonly IConfiguration _configuration;
+        public AuthController(IUserRepositories userRepositories, UserManager<UserModels> userManager, SignInManager<UserModels> signInManager, IConfiguration configuration)
         {
             _userRepositories = userRepositories;
             _userManager = userManager;
             _signInManager = signInManager;
-
+            _configuration = configuration;
         }
 
         [AllowAnonymous]
@@ -44,7 +44,7 @@ namespace DoAn.Controllers
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                return Redirect("http://localhost:3000/setAuth?error=info_not_exits");
+                return Redirect($"{_configuration["ClientUrl"]}/setAuth?error=info_not_exits");
             }
             
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
@@ -54,17 +54,17 @@ namespace DoAn.Controllers
                 if(user != null)
                 {   
                     var token = _userRepositories.CreateToken(user.Email, user.Id.ToString(), user.fullName, user.UserName, user.type);
-                    return Redirect("http://localhost:3000/setAuth?token=" + token);
+                    return Redirect($"{_configuration["ClientUrl"]}/setAuth?token=" + token);
                 }
                 else
                 {
-                    return Redirect("http://localhost:3000/setAuth?error=info_not_exits");
+                    return Redirect($"{_configuration["ClientUrl"]}/setAuth?error=info_not_exits");
                 }
                
             }
             if (result.IsLockedOut)
             {
-                return Redirect("http://localhost:3000/setAuth?error=account_is_lock");
+                return Redirect($"{_configuration["ClientUrl"]}/setAuth?error=account_is_lock");
             }
             else
             {
@@ -75,7 +75,7 @@ namespace DoAn.Controllers
                 var picture = info.Principal.FindFirstValue("picture");
                 if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
                 {
-                    return Redirect("http://localhost:3000/setAuth?error=info_not_exits");
+                    return Redirect($"{_configuration["ClientUrl"]}/setAuth?error=info_not_exits");
                 }
                 if (string.IsNullOrEmpty(email))
                 {
@@ -107,13 +107,13 @@ namespace DoAn.Controllers
 
                         var token = _userRepositories.CreateToken(user.Email, user.Id.ToString(), user.fullName, user.UserName, user.type);
 
-                        return Redirect("http://localhost:3000/setAuth?token=" + token);
+                        return Redirect($"{_configuration["ClientUrl"]}/setAuth?token=" + token);
                     }
                 }else
                 {
-                    return Redirect("http://localhost:3000/setAuth?error=create_account_failed");
+                    return Redirect($"{_configuration["ClientUrl"]}/setAuth?error=create_account_failed");
                 }
-                return Redirect("http://localhost:3000/setAuth?error=error_please_try_a_gain");
+                return Redirect($"{_configuration["ClientUrl"]}/setAuth?error=error_please_try_a_gain");
             }
 
         }
@@ -219,6 +219,18 @@ namespace DoAn.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+
+        [HttpPut("updateUser")]
+        public async Task<IActionResult> UpdateUser([FromBody]UpdateUser user)
+        {
+            var result = await _userRepositories.updateInfoUser(user);
+            if (result.IsSuccessed)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
         }
 
         [Authorize(Roles = "Admin, user")]

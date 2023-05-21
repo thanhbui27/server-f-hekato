@@ -18,6 +18,8 @@ namespace DoAn.Helpers.Mapper
 
             //user
             CreateMap<UserRegister, UserModels>().ReverseMap();
+            CreateMap<UpdateUser, UserModels>().ReverseMap();
+
 
             //comment
             CreateMap<CommentsProducts , CreateComments>().ReverseMap();

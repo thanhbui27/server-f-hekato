@@ -15,6 +15,8 @@ namespace DoAn.Models
         
         public string status { get; set; }
 
+        public string? transactionCode { get; set; }
+
         public DateTime? createAt { get; set; }
 
         public Orders orders { get; set; }
