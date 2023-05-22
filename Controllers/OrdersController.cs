@@ -1,13 +1,14 @@
 ﻿using DoAn.Models;
 using DoAn.Repositories.Order;
 using DoAn.ViewModels.Orders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
+    [Authorize]
     public class OrdersController : Controller
     {
         private readonly IOrderRepositories _IOrderRepositories;
@@ -16,7 +17,7 @@ namespace DoAn.Controllers
             _IOrderRepositories = iorderRepositories;
         }
 
-
+        [Authorize(Roles = "admin")]
         [HttpGet("GetAllOrder")]
         public async Task<IActionResult> GetAllOrder([FromQuery]GetAllOrder getall)
         {
@@ -53,6 +54,7 @@ namespace DoAn.Controllers
      
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPut("UpdateStatus")]
 
         public async Task<IActionResult> UpdateStatusOrder(int id, string status)
@@ -65,6 +67,7 @@ namespace DoAn.Controllers
             return BadRequest(result);
 
         }
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

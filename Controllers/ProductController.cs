@@ -123,6 +123,7 @@ namespace DoAn.Controllers
  
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("Create")]
         public async Task<IActionResult> Create([FromForm] ProductCreate create)
         {
@@ -138,6 +139,7 @@ namespace DoAn.Controllers
             return BadRequest();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("UploadImage")]
 
         public async Task<IActionResult> UploadImage([FromForm]ProductUploadImage upload)
@@ -155,7 +157,7 @@ namespace DoAn.Controllers
         }
 
 
-
+        [Authorize(Roles = "admin")]
         [HttpPut("Update")]
         public async Task<IActionResult> Update([FromForm] ProductUpdate update)
         {
@@ -171,6 +173,7 @@ namespace DoAn.Controllers
             return BadRequest();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("Delete")]
         public async Task<IActionResult> Delete(ProductDelete dele)
         {
@@ -188,6 +191,7 @@ namespace DoAn.Controllers
             return BadRequest();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("DeleteCategory")]
 
         public async Task<IActionResult> DeleteCcategory(ProductRemoveCatgory rm)

@@ -1,11 +1,13 @@
 ﻿using DoAn.Repositories.ProductAction;
 using DoAn.ViewModels.ProductAction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "admin")]
     public class ProductActionController : Controller
     {
         private readonly IProductActionRepositories _productActionRepositories;
@@ -15,7 +17,7 @@ namespace DoAn.Controllers
             _productActionRepositories = productActionRepositories;
         }
 
-  
+        
         [HttpPut("update")]
         public async Task<IActionResult> Update(UpdateProductAction update)
         {
