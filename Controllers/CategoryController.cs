@@ -8,7 +8,7 @@ namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
+    [Authorize(Roles = "admin")]
     public class CategoryController : Controller
     {
         public readonly ICategoryRepositories _cateRepositories;

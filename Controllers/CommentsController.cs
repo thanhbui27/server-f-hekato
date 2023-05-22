@@ -1,12 +1,14 @@
 ﻿using DoAn.Models;
 using DoAn.Repositories.Comment;
 using DoAn.ViewModels.Comments;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CommentsController : Controller
     {
         private readonly ICommentsRepositories _commentsRepositories;
@@ -14,7 +16,7 @@ namespace DoAn.Controllers
         public CommentsController(ICommentsRepositories commentsRepositories) {
             _commentsRepositories= commentsRepositories;
         }
-
+        [AllowAnonymous]
         [HttpGet("getAllComment")]
         public async Task<IActionResult> getAllComment(int productId)
         {

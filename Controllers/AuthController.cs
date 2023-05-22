@@ -9,12 +9,13 @@ using System.Security.Claims;
 
 using Microsoft.AspNetCore.Authentication.Facebook;
 using System;
+using System.Data;
 
 namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-  
+    [Authorize]
     public class AuthController : Controller
     {
         public readonly IUserRepositories _userRepositories;
@@ -38,6 +39,7 @@ namespace DoAn.Controllers
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
+        [AllowAnonymous]
         [HttpGet("/Auth/ProviderResponse")]
         public async Task<IActionResult> ProviderResponse()
         {
@@ -127,15 +129,15 @@ namespace DoAn.Controllers
             return Challenge(properties, FacebookDefaults.AuthenticationScheme);
         }
 
-
+        [AllowAnonymous]
         [HttpGet("getAllUser")]
         public async Task<IActionResult> getAllUser([FromQuery]GetAllUser getAll)
         {
             return Ok(await _userRepositories.getAllUser(getAll));
         }
 
+
         [HttpGet("me")]
-        [Authorize]
         public async Task<IActionResult> GetMe()
         {
             //var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -153,6 +155,7 @@ namespace DoAn.Controllers
             return BadRequest(result);
 
         }
+        
         [HttpPost("uploadAvatar")]
         public async Task<IActionResult> uploadImageUser(string id , [FromForm] IFormFile image)
         {
@@ -163,7 +166,7 @@ namespace DoAn.Controllers
             }
             return BadRequest(result);
         }
-
+        [Authorize(Roles = "admin")]
         [HttpPost("lockUser")]
         public async Task<IActionResult> lockUser(string id, DateTime? dateTime)
         {
@@ -175,6 +178,7 @@ namespace DoAn.Controllers
             return BadRequest(result);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("unlockUser")]
         public async Task<IActionResult> unlockUser(string id)
         {
@@ -186,6 +190,7 @@ namespace DoAn.Controllers
             return BadRequest(result);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("decentralization")]
         public async Task<IActionResult> decentralization(string id, string type)
         {
@@ -197,8 +202,7 @@ namespace DoAn.Controllers
             return BadRequest(result);
         }
 
-      
-
+        [AllowAnonymous]      
         [HttpPost("login")]
         public async Task<IActionResult> login(UserLogin u)
         {
@@ -209,7 +213,7 @@ namespace DoAn.Controllers
             }
             return BadRequest(result);
         }
-
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> register([FromBody]UserRegister u)
         {
@@ -233,7 +237,7 @@ namespace DoAn.Controllers
 
         }
 
-        [Authorize(Roles = "Admin, user")]
+        [Authorize]
         [HttpDelete("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -247,6 +251,7 @@ namespace DoAn.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromBody]string id)
         {

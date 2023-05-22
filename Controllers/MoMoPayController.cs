@@ -2,6 +2,7 @@
 using DoAn.Repositories.MoMo;
 using DoAn.Repositories.VNPAY;
 using DoAn.ViewModels.Orders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Net;
@@ -11,6 +12,7 @@ namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class MoMoPayController : Controller
     {
         private readonly IConfiguration _configuration;
