@@ -32,7 +32,7 @@ namespace DoAn.Controllers
         public IActionResult PaymentCallback()
         {
             var response = _vnpayRepositories.PaymentExecute(Request.Query);
-            if(response.Success && response.VnPayResponseCode.Contains("00"))
+            if(response.Success && response.ResponseCode.Contains("00"))
             {   
                 return Redirect($"{_configuration["ClientUrl"]}/orderCompleted?success={response.Success}");
             }
