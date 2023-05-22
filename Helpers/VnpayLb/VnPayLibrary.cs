@@ -49,7 +49,7 @@ namespace DoAn.Helpers.VnpayLb
                 PaymentId = vnPayTranId.ToString(),
                 TransactionId = vnPayTranId.ToString(),
                 Token = vnpSecureHash,
-                VnPayResponseCode = vnpResponseCode
+                ResponseCode = vnpResponseCode
             };
         }
         public string GetIpAddress(HttpContext context)

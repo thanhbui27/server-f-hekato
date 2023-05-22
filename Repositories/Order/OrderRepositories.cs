@@ -107,7 +107,7 @@ namespace DoAn.Repositories.Order
                         quantity = od.quantity ,
                
                     }).Where(o => o.OrderId == x.OrderId).ToList()
-                }).ToListAsync();
+                }).OrderByDescending(x => x.createAt).ToListAsync();
 
                 if (!string.IsNullOrEmpty(getall.q))
                 {

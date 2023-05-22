@@ -52,6 +52,11 @@ namespace DoAn.Repositories.VNPAY
                 _IOrderRepositories.updateTransCode(Int32.Parse(order[0]),response.TransactionId);
 
             }
+            else
+            {
+                string[] order = response.OrderDescription.Split("-");
+                _IOrderRepositories.updateStatusOrder(Int32.Parse(order[0]), "canceled_payment");
+            }
             return response;
         }
     }
