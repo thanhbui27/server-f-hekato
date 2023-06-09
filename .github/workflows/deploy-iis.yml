@@ -9,7 +9,7 @@ jobs:
   runs-on: self-hosted
 
   step: 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
 
     - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
