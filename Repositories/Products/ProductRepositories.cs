@@ -732,6 +732,45 @@ namespace DoAn.Repositories.Products
                 };
             }
         }
+
+        public async Task<ApiResult<List<Product>>> SearchProduct(string key)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(key))
+                {
+                    var product = await _context.products.Where(item => item.ProductName.Contains(key)).ToListAsync();
+                    if(product.Count > 0)
+                    {
+                        return new ApiSuccessResult<List<Product>>(product);
+                    }
+                    else
+                    {
+                        return new ApiSuccessResult<List<Product>>
+                        {
+                            IsSuccessed = true,
+                            Data = product,
+                            Message = "Không thể tìm thấy sản phẩm"
+                        };
+                    }
+                   
+                }
+
+                 return new ApiErrorResult<List<Product>>
+                 {
+                     IsSuccessed = false,
+                     Message = ""
+                 };
+            }catch(Exception ex)
+            {
+                return new ApiErrorResult<List<Product>>
+                {
+                    IsSuccessed = false,
+                    Message = ex.Message
+                };
+            }
+           
+        }
     }
 }
 

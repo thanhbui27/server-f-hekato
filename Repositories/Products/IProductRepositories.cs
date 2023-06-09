@@ -1,5 +1,6 @@
 ﻿using DoAn.Helpers.ApiResponse;
 using DoAn.Helpers.Pagination;
+using DoAn.Models;
 using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductImage;
 
@@ -8,6 +9,8 @@ namespace DoAn.Repositories.Products
     public interface IProductRepositories
     {
         Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request);
+
+        Task<ApiResult<List<Product>>> SearchProduct(string key);
 
         Task<ApiResult<bool>> create(ProductCreate create);
 
