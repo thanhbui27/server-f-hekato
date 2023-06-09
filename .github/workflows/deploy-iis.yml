@@ -3,34 +3,30 @@
 on:
   workflow_dispatch:
 
+
 jobs:
   build-and-deploy:
+    runs-on: self-hosted
 
-  runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-node@v3
+        with:
+          dotnet-version: '6.0.x'
+     # dotnet build and publish
+      - name: Build with dotnet
+        shell: cmd
+        run: dotnet build --confguration Release
 
-  step: 
-    - uses: actions/checkout@v2
+      - name: dotnet publish
+        shell: cmd
+        run: |
+            dotnet publish -c Release -o .\myapp
 
-    - name: Setup .NET Core
-       uses: actions/setup-dotnet@v1
-       with:
-         dotnet-version: '6.0.x'
-    
-     #dotnet build and publish
-    - name: Build with dotnet
-      shell: cmd
-      run: dotnet build --confguration Release
-
-    - name: dotnet publish
-      shell: cmd 
-    - run: |
-        dotnet publish -c Release -o .\myapp
-
-    - name: Deploy to IIS
-    - shell: cmd 
-    - run: |
-        iiscrest /stop
-        xcopy /s /y .\myapp\* D:\www\api.f-hekuro.com
-        iisreset /start
-
-
+      - name: Deploy to IIS
+        shell: cmd 
+        run: |
+            iiscrest /stop
+            xcopy /s /y .\myapp\* D:\www\api.f-hekuro.com
+            iisreset /start
