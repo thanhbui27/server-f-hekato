@@ -1,0 +1,35 @@
+﻿name: .NET Core deploy IIS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+
+  runs-on: self-hosted
+
+  step: 
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+    
+    - name: Build with dotnet
+      shell: cmd
+      run: dotnet build --confguration Release
+
+    - name: dotnet publish
+      shell: cmd 
+    - run: |
+        dotnet publish -c Release -o .\myapp
+
+    - name: Deploy to IIS
+    - shell: cmd 
+    - run: |
+        iiscrest /stop
+        xcopy /s /y .\myapp\* D:\www\api.f-hekuro.com
+        iisreset /start
+
+
