@@ -16,6 +16,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
     
+     #dotnet build and publish
     - name: Build with dotnet
       shell: cmd
       run: dotnet build --confguration Release
