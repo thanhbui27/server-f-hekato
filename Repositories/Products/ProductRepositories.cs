@@ -105,6 +105,15 @@ namespace DoAn.Repositories.Products
                 if (product != null)
                 {
                     _context.products.Remove(product);
+                    var productImage = _context.ProductImage.Where(x => x.ProductId == product.ProductId).ToList();
+
+                    foreach(var image in productImage)
+                    {
+                        string fileName = Path.GetFileName(image.url_image); // "9590b704-167a-4daf-a2d6-041462b738f9.jpg"
+                        string directoryPath = Path.GetDirectoryName(image.url_image);// "/Images"
+                        _storageService.DeleteFileAsync(fileName);
+                    }
+
                     await _context.SaveChangesAsync();
                     return new ApiSuccessResult<bool>
                     {

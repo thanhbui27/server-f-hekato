@@ -26,8 +26,8 @@ namespace DoAn.Repositories.MoMo
             string serectkey = _configuration["MoMo:secretKey"];
             var create = await _IOrderRepositories.create(model);
             string orderInfo = $"{create.Data}-{model.users.fullName}-{model.total}";
-            string returnUrl = _configuration["MoMo:returnUrl"];
-            string notifyurl = _configuration["MoMo:notifyurl"]; 
+            string returnUrl = "https://localhost:7263/api/MoMoPay/ConfirmPaymentClient";
+            string notifyurl = "https://4c8d-2001-ee0-5045-50-58c1-b2ec-3123-740d.ap.ngrok.io/api/MoMoPay/SavePayment"; 
 
             string amount = model.total.ToString();
             string orderid = DateTime.Now.Ticks.ToString(); //mã đơn hàng

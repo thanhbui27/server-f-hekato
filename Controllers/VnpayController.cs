@@ -10,7 +10,6 @@ namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class VnpayController : Controller
     {
         private readonly IVnpayRepositories _vnpayRepositories;

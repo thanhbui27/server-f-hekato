@@ -12,7 +12,7 @@ namespace DoAn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class MoMoPayController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -31,8 +31,9 @@ namespace DoAn.Controllers
             return Ok(res);
 
         }
+
         [HttpGet("ConfirmPaymentClient")]
-        public ActionResult ConfirmPaymentClient()
+        public async Task<IActionResult> ConfirmPaymentClient()
         {
             var response = _moMoRepositories.PaymentExecute(Request.Query);        
             if (response.Success && response.ResponseCode.Contains("0"))
