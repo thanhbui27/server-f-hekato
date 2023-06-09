@@ -38,6 +38,21 @@ namespace DoAn.Controllers
             return BadRequest(result);
         }
 
+        [HttpGet("SearchProduct")]
+        public async Task<IActionResult> SearchProduct([FromQuery]string key)
+        {
+            if(!string.IsNullOrEmpty(key))
+            {
+                var result = await _productRepositories.SearchProduct(key);
+                if (result.IsSuccessed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+            }
+            return BadRequest();
+            
+        }
 
         [HttpGet("GetProductNewArrival")]
         public async Task<IActionResult> GetProductNewArrival()
