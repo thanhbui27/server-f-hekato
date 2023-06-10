@@ -20,14 +20,30 @@ namespace DoAn.Repositories.Comment
         {
             try
             {
-                var cm = _mapper.Map<CommentsProducts>(comment);
-                 _context.commentProducts.Add(cm);
-                await _context.SaveChangesAsync();
-                return new ApiSuccessResult<bool>
+                var commentProduct = _context.commentProducts.Where(item => item.ProductId == comment.ProductId && item.Uid == comment.Uid).FirstOrDefault();
+                if(commentProduct == null )
                 {
-                    IsSuccessed= true,
-                    Message = "Thêm bình luận thành công"
-                };
+                    var cm = _mapper.Map<CommentsProducts>(comment);
+                    _context.commentProducts.Add(cm);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Thêm bình luận thành công"
+                    };
+                }else
+                {
+                    var cm = _mapper.Map<CommentsProducts>(comment);
+                    cm.Rate = commentProduct.Rate;
+                    _context.commentProducts.Add(cm);
+                    await _context.SaveChangesAsync();
+                    return new ApiSuccessResult<bool>
+                    {
+                        IsSuccessed = true,
+                        Message = "Thêm bình luận thành công"
+                    };
+                }
+              
 
             }
             catch (Exception ex)

@@ -8,6 +8,7 @@ namespace DoAn.Models
 
         public string CategoryName { get; set; }
 
+        public string keyCategory { get; set; }
         public Collection<ProductInCategory> GetsProductInCategories { get; set; }
     }
 }

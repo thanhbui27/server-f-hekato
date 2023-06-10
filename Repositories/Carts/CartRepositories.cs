@@ -116,7 +116,8 @@ namespace DoAn.Repositories.Carts
                             .Select(c => new CategoryGetAll
                             {
                                 CategoryId = c.CategoryId,
-                                CategoryName = c.CategoryName
+                                CategoryName = c.CategoryName,
+                                keyCategory = c.keyCategory
                             }).ToList()
                     }).FirstOrDefault(pt => pt.ProductId == x.ProductId))
                 }).Where(x => x.SessionId == uid).ToList();

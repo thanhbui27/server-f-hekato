@@ -3,6 +3,7 @@ using DoAn.ViewModels.Product;
 using DoAn.ViewModels.ProductImage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace DoAn.Controllers
@@ -53,6 +54,16 @@ namespace DoAn.Controllers
             return BadRequest();
             
         }
+
+        [HttpGet("FilterProduct")]
+        public async Task<IActionResult> FilterProduct([FromQuery] ProductKeyFilter requestKey )
+        {
+            var result = await _productRepositories.Filterproduct(requestKey);
+            return Ok(result);
+
+
+        }
+
 
         [HttpGet("GetProductNewArrival")]
         public async Task<IActionResult> GetProductNewArrival()

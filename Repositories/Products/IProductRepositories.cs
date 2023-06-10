@@ -10,6 +10,7 @@ namespace DoAn.Repositories.Products
     {
         Task<PagedResult<GetProductByPa>> GetAll(GetProductRequestPagi request);
 
+        Task<PagedResult<GetProductByPa>> Filterproduct(ProductKeyFilter request);
         Task<ApiResult<List<Product>>> SearchProduct(string key);
 
         Task<ApiResult<bool>> create(ProductCreate create);
