@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DoAn.EF;
 using DoAn.Helpers.ApiResponse;
+using DoAn.Helpers.FuncHelps;
 using DoAn.Models;
 using DoAn.ViewModels.Category;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,14 @@ namespace DoAn.Repositories.Categorys
         {
             try
             {
+                var func = new FuncHelp();
+                
                 var cateData = _context.categories.Where(b => b.CategoryName == cate.CategoryName)
                    .FirstOrDefault();
                 if (cateData == null)
                 {
                     var category = _mapper.Map<Category>(cate);
+                    category.keyCategory = func.RemoveVietnameseTone(cate.CategoryName).Replace(" ", "_").ToLower();
                     _context.categories.Add(category);
                     await _context.SaveChangesAsync();
                     return new ApiSuccessResult<bool>
@@ -96,10 +100,13 @@ namespace DoAn.Repositories.Categorys
         {
             try
             {
+                var func = new FuncHelp();
                 var category = await _context.categories.FirstOrDefaultAsync(x => x.CategoryId == cate.CategoryId);
                 if (category != null)
                 {
                     category.CategoryName = cate.CategoryName;
+                    category.keyCategory = func.RemoveVietnameseTone(cate.CategoryName).Replace(" ", "_").ToLower();
+               
                     _context.categories.Update(category);
                     await _context.SaveChangesAsync();
                     return new ApiSuccessResult<bool>

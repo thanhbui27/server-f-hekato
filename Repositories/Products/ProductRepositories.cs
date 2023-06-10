@@ -166,7 +166,8 @@ namespace DoAn.Repositories.Products
                             .Select(c => new CategoryGetAll
                             {
                                 CategoryId = c.CategoryId,
-                                CategoryName = c.CategoryName
+                                CategoryName = c.CategoryName,
+                                keyCategory = c.keyCategory
                             }).ToList()
                     });
                 int totalRow = await _context.products.CountAsync();
@@ -347,7 +348,8 @@ namespace DoAn.Repositories.Products
                              .Select(c => new CategoryGetAll
                              {
                                  CategoryId = c.CategoryId,
-                                 CategoryName = c.CategoryName
+                                 CategoryName = c.CategoryName,
+                                 keyCategory = c.keyCategory
                              }).ToList()
                      })
                      .FirstOrDefault();
@@ -491,7 +493,8 @@ namespace DoAn.Repositories.Products
                         .Select(c => new CategoryGetAll
                         {
                             CategoryId = c.CategoryId,
-                            CategoryName = c.CategoryName
+                            CategoryName = c.CategoryName,
+                            keyCategory = c.keyCategory 
                         }).ToList()
                 }).Where(x => x.productAction.Featured == true)
                 .ToListAsync();
@@ -535,7 +538,8 @@ namespace DoAn.Repositories.Products
                                         .Select(c => new CategoryGetAll
                                         {
                                             CategoryId = c.CategoryId,
-                                            CategoryName = c.CategoryName
+                                            CategoryName = c.CategoryName,
+                                            keyCategory = c.keyCategory 
                                         }).ToList()
                                 }).Where(x => x.productAction.BestSeller == true)
                                 .ToListAsync();
@@ -581,7 +585,8 @@ namespace DoAn.Repositories.Products
                           .Select(c => new CategoryGetAll
                           {
                               CategoryId = c.CategoryId,
-                              CategoryName = c.CategoryName
+                              CategoryName = c.CategoryName,
+                              keyCategory = c.keyCategory
                           }).ToList()
                   }).Where(x => x.productAction.SpecialOffer == true)
                   .ToListAsync();
@@ -626,7 +631,8 @@ namespace DoAn.Repositories.Products
                          .Select(c => new CategoryGetAll
                          {
                              CategoryId = c.CategoryId,
-                             CategoryName = c.CategoryName
+                             CategoryName = c.CategoryName,
+                             keyCategory = c.keyCategory
                          }).ToList()
                  }).Where(x => x.productAction.NewArrival == true)
                  .ToListAsync();
@@ -671,7 +677,8 @@ namespace DoAn.Repositories.Products
                         .Select(c => new CategoryGetAll
                         {
                             CategoryId = c.CategoryId,
-                            CategoryName = c.CategoryName
+                            CategoryName = c.CategoryName,
+                            keyCategory = c.keyCategory
                         }).ToList()
                 }).Where(x => x.productAction.trending == true)
                 .ToListAsync();
@@ -716,7 +723,8 @@ namespace DoAn.Repositories.Products
                         .Select(c => new CategoryGetAll
                         {
                             CategoryId = c.CategoryId,
-                            CategoryName = c.CategoryName
+                            CategoryName = c.CategoryName,
+                            keyCategory = c.keyCategory
                         }).ToList()
                 }).Where(x => x.productAction.trendSmall == true).OrderByDescending(x => x.ProductId)
                 .ToListAsync();
@@ -770,6 +778,110 @@ namespace DoAn.Repositories.Products
                 };
             }
            
+        }
+
+        public async Task<PagedResult<GetProductByPa>> Filterproduct(ProductKeyFilter request)
+        {
+            try
+            {
+                var product = _context.products.Select(p => new GetProductByPa
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    List_image = p.GetsProductImage.Select(pi => new GetProductImage
+                    {
+                        Id = pi.Id,
+                        url_image = pi.url_image,
+                        timeAdd = pi.timeAdd.ToString("yyyy/MM/dd")
+                    }).ToList(),
+                    listComment = p.comments.Select(p => new CommentsProducts
+                    {
+                        CommentsId = p.CommentsId,
+                        createAt = p.createAt,
+                        Rate = p.Rate,
+                        user = _context.Users.Where(u => u.Id == p.Uid).FirstOrDefault(),
+                        description = p.description,
+                        ProductId = p.ProductId,
+                    }).ToList(),
+                    productAction = p.productAction,
+                    quantity = p.quantity,
+                    PriceNew = p.PriceNew,
+                    PriceOld = p.PriceOld,
+                    ShortDetails = p.ShortDetails,
+                    ProductDescription = p.ProductDescription,
+                    dateAdd = p.dateAdd,
+                    Categories = p.GetsProductInCategories
+                        .Select(pc => pc.GetCategory)
+                        .Select(c => new CategoryGetAll
+                        {
+                            CategoryId = c.CategoryId,
+                            CategoryName = c.CategoryName,
+                            keyCategory = c.keyCategory
+                        }).ToList()
+                }).ToList();
+
+                if(request.productBrand != null && request.productBrand.Count > 0)
+                {
+                    product = product.Where(p => p.Categories.Any(c => request.productBrand.Contains(c.keyCategory))).ToList();
+                }
+
+                if(request.categories != null && request.categories.Count > 0)
+                {
+                    // do something ...
+                }
+
+                if (!string.IsNullOrEmpty(request.discount))
+                {
+                    // do something ...
+                }
+
+                if (!string.IsNullOrEmpty(request.rating))
+                {
+                    product = product.Where(p => p.listComment.Any(cm => cm.Rate <= Int32.Parse(request.rating))).ToList();
+                }
+
+                if (!string.IsNullOrEmpty(request.price_filter))
+                {
+                    var price = request.price_filter.Split("-");
+
+                   
+
+                    if (price[0] == "0")
+                    {
+                        product = product.Where(p => p.PriceNew < Int32.Parse(price[1])).ToList();
+                    }
+
+                    if (price[1] == "0")
+                    {
+                        product = product.Where(p => p.PriceNew > Int32.Parse(price[0])).ToList();
+                    }
+
+                    if (price[0] != "0" && price[1] != "0") {
+                        product = product.Where(p => p.PriceNew < Int32.Parse(price[1]) && p.PriceNew > Int32.Parse(price[0])).ToList();
+                    }
+
+                }
+
+                int totalRow = await _context.products.CountAsync();
+
+                return new PagedResult<GetProductByPa>
+                {
+                    TotalRecords = totalRow,
+                    PageSize = 1,
+                    PageIndex = 10,
+                    Items = product
+                };
+            }
+            catch(Exception ex)
+            {
+                return new PagedResult<GetProductByPa>
+                {
+                    TotalRecords = 0,
+                    PageSize = 1,
+                    PageIndex = 10,
+                    Items = new List<GetProductByPa>()
+                };
+            }
         }
     }
 }

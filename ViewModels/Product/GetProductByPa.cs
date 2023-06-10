@@ -9,7 +9,7 @@ namespace DoAn.ViewModels.Product
         public int ProductId { get; set; }
         public string ProductName { get; set; }
 
-        
+        public List<CommentsProducts>? listComment { get; set; }
         public List<GetProductImage> List_image { get; set; } = new List<GetProductImage>();
         public int quantity { get; set; }
         public decimal PriceNew { get; set; }

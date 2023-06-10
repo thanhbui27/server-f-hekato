@@ -3,5 +3,6 @@
     public class CategoryCreate
     {
         public string CategoryName { get; set; }
+
     }
 }
