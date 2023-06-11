@@ -193,7 +193,7 @@ namespace DoAn.Repositories.Order
                     payments = x.payments,
                     total = x.total,
                     OrderDetails = x.OrderDetails.Where(o => o.OrderId == x.OrderId).ToList()
-                }).Where(x => x.Uid == Uid).ToListAsync();
+                }).Where(x => x.Uid == Uid).OrderByDescending(x => x.createAt).ToListAsync();
 
                 return new ApiSuccessResult<List<Orders>>(order);
             }
