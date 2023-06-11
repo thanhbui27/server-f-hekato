@@ -3,6 +3,8 @@ using DoAn.EF;
 using DoAn.Helpers.ApiResponse;
 using DoAn.Helpers.Pagination;
 using DoAn.Models;
+using DoAn.Repositories.Email;
+using DoAn.Repositories.Users;
 using DoAn.ViewModels.Orders;
 using DoAn.ViewModels.Product;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,10 +16,15 @@ namespace DoAn.Repositories.Order
     {
         private readonly EFDbContext _context;
         private readonly IMapper _mapper;
-        public OrderRepositories(EFDbContext context, IMapper mapper)
+        private readonly IEmailRepositories _emailRepositories;
+        private readonly IUserRepositories _userRepositories;
+
+        public OrderRepositories(EFDbContext context, IMapper mapper, IEmailRepositories emailRepositories, IUserRepositories userRepositories)
         {
             _context = context;
             _mapper = mapper;
+            _emailRepositories = emailRepositories;
+            _userRepositories = userRepositories;
         }
         public async Task<ApiResult<int>> create(CreateOrders create)
         {
@@ -238,11 +245,23 @@ namespace DoAn.Repositories.Order
             try
             {
                 var payment = _context.payments.FirstOrDefault(x => x.paymentId == id);
-                if(payment == null)
+                var user = _context.Users.Where(item => item.orders.Where(o => o.payments.paymentId == id).Any()).FirstOrDefault();
+                if (payment == null)
                 {
                     return new ApiErrorResult<bool>("Không thể tìm thấy đơn hàng");
                 }
                 payment.status = status;
+                if(status == "order_confirmed")
+                {
+
+                    _emailRepositories.SendEmail(user.Email, "Cảm ơn bạn đã đạt hàng từ shop", "Sản phẩm sẽ được giao đến tận tay cho bạn trong thời gian sớm nhất. Một lần nữa cảm ơn bạn đã tin tưởng shop");
+
+
+                }
+                else if(status != "order_confirmed" || status != "pending")
+                {
+                    _emailRepositories.SendEmail(user.Email, "Đơn hàng bị huỷ", "Sản phẩm của bạn đã hết hàng hoặc có lỗi không mong muốn trong quá trình đặt hàng, chùng tôi rất tiết khi phải thông báo với bạn điều này. Một lần nữa cảm ơn bạn đã tin tưởng shop");
+                }
                 await _context.SaveChangesAsync();
                 return new ApiSuccessResult<bool>
                 {
