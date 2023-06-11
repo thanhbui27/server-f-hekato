@@ -3,6 +3,7 @@ using DoAn.Models;
 using DoAn.Repositories.Carts;
 using DoAn.Repositories.Categorys;
 using DoAn.Repositories.Comment;
+using DoAn.Repositories.Email;
 using DoAn.Repositories.MoMo;
 using DoAn.Repositories.Order;
 using DoAn.Repositories.ProductAction;
@@ -76,6 +77,7 @@ namespace DoAn
             builder.Services.AddTransient<IVnpayRepositories, VnpayRepositories>();
             builder.Services.AddTransient<IMoMoRepositories, MoMoRepositories>();
             builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddTransient<IEmailRepositories, EmailRepositories>();
 
             string issuer = builder.Configuration["JWT:ValidIssuer"];
             string signingKey = builder.Configuration["JWT:Sercet"];
