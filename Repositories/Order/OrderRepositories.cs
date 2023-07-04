@@ -251,17 +251,15 @@ namespace DoAn.Repositories.Order
                     return new ApiErrorResult<bool>("Không thể tìm thấy đơn hàng");
                 }
                 payment.status = status;
-                if(status == "order_confirmed")
-                {
+                //if(status == "order_confirmed")
+                //{
+                //    _emailRepositories.SendEmail(user.Email, "Cảm ơn bạn đã đạt hàng từ shop", "Sản phẩm sẽ được giao đến tận tay cho bạn trong thời gian sớm nhất. Một lần nữa cảm ơn bạn đã tin tưởng shop");
 
-                    _emailRepositories.SendEmail(user.Email, "Cảm ơn bạn đã đạt hàng từ shop", "Sản phẩm sẽ được giao đến tận tay cho bạn trong thời gian sớm nhất. Một lần nữa cảm ơn bạn đã tin tưởng shop");
-
-
-                }
-                else if(status != "order_confirmed" || status != "pending")
-                {
-                    _emailRepositories.SendEmail(user.Email, "Đơn hàng bị huỷ", "Sản phẩm của bạn đã hết hàng hoặc có lỗi không mong muốn trong quá trình đặt hàng, chùng tôi rất tiết khi phải thông báo với bạn điều này. Một lần nữa cảm ơn bạn đã tin tưởng shop");
-                }
+                //}
+                //else if(status != "order_confirmed" || status != "pending")
+                //{
+                //    _emailRepositories.SendEmail(user.Email, "Đơn hàng bị huỷ", "Sản phẩm của bạn đã hết hàng hoặc có lỗi không mong muốn trong quá trình đặt hàng, chùng tôi rất tiết khi phải thông báo với bạn điều này. Một lần nữa cảm ơn bạn đã tin tưởng shop");
+                //}
                 await _context.SaveChangesAsync();
                 return new ApiSuccessResult<bool>
                 {
